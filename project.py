@@ -8,27 +8,6 @@ import cv2  # ספרייה לעיבוד תמונות וליצירת סרטון M
 from numba import njit  # האצת פונקציות חישוביות באמצעות הידור JIT.
 
 
-def world_to_voxel(P, header):
-    """
-    מטרת הפונקציה:
-    להמיר נקודה ממערכת קואורדינטות פיזית (World) למערכת
-    אינדקסי הווקסלים של הנפח.
-    קלט:
-    P - נקודה תלת־ממדית בקואורדינטות פיזיות.
-    header - המטא־נתונים של קובץ ה-NRRD.
-    פלט:
-    מערך המכיל את אינדקסי הווקסל המתאימים לנקודה.
-    אופן הפעולה:
-    הפונקציה קוראת את ראשית מערכת הקואורדינטות ואת וקטורי הכיוון
-    מתוך המטא־נתונים, ולאחר מכן פותרת מערכת משוואות ליניארית.
-    """
-    origin = np.asarray(header["space origin"], dtype=float)  # קריאת ראשית מערכת הקואורדינטות והמרתה למערך מספרי.
-    directions = np.asarray(header["space directions"], dtype=float)  # קריאת וקטורי הכיוון של צירי הנפח.
-    # Solve: directions.T @ voxel_indices = P - origin
-    voxel = np.linalg.solve(directions.T, np.asarray(P, dtype=float) - origin)  # פתרון מערכת המשוואות למציאת אינדקסי הווקסל.
-    return voxel  # החזרת הקואורדינטות במערכת אינדקסי הווקסלים.
-
-
 @njit(cache=True)  # האצת הפונקציה באמצעות Numba ושמירת הגרסה המהודרת במטמון.
 def dist(p1,p2):
     """
@@ -357,7 +336,7 @@ def project_valid_plane(M, points):
 
 
 
-def create_video(projections, output_file, fps=30, row_step=5):
+def create_video(projections, output_file, fps):
     """
     מטרת הפונקציה:
     ליצור סרטון MP4 שבו כל תמונת הקרנה מוצגת בשלמותה
@@ -367,8 +346,6 @@ def create_video(projections, output_file, fps=30, row_step=5):
     projections - רשימת מטריצות ההקרנה הדו־ממדיות.
     output_file - נתיב קובץ הווידאו שייוצר.
     fps - מספר הפריימים לשנייה בסרטון.
-    row_step - נשמר לצורך תאימות לקריאה הקיימת ב-main,
-               אך אינו משמש עוד ליצירת הפריימים.
 
     פלט:
     קובץ MP4 שבו כל הקרנה מופיעה כפריים אחד שלם.
@@ -446,12 +423,9 @@ def main():
     print("NRRD space:", header.get("space"))  # הצגת מערכת הקואורדינטות של הנפח.
     print("Space origin:", header.get("space origin"))  # הצגת ראשית מערכת הקואורדינטות.
     print("Space directions:\n", header.get("space directions"))  # הצגת וקטורי הכיוון של הצירים.
-    print("Volume shape:", M.shape)  # הצגת ממדי הנפח פעם נוספת, בהתאם לקוד המקורי.
     print("Volume dtype:", M.dtype)  # הצגת סוג הנתונים של הנפח.
     print("Volume value range:", M.min(), M.max())  # הצגת ערכי הנפח המינימלי והמקסימלי.
     print("CSV plane coordinates must match the volume coordinate system.")  # הצגת הדרישה להתאמת מערכת הקואורדינטות.
-    print("NRRD space directions:", header.get("space directions"))  # הצגת וקטורי הכיוון פעם נוספת.
-    print("NRRD space origin:", header.get("space origin"))  # הצגת ראשית מערכת הקואורדינטות פעם נוספת.
     if M.size==0:  # בדיקה אם המערך אינו מכיל איברים.
         raise ValueError("The input volume is empty.")  # עצירת התוכנית אם הנפח ריק.
     if M.min()<0 or M.max()>np.iinfo(np.uint16).max:  # בדיקה אם ערכי הנפח מתאימים לטווח של uint16.
@@ -502,14 +476,12 @@ def main():
     # התחלת מדידת ההקרנות לאחר פעולת החימום.
     projection_start=time.perf_counter()  # שמירת זמן ההתחלה למדידת חישוב ההקרנות.
     projections=[]  # יצירת רשימה לשמירת מטריצות ההקרנה.
-    projection_times=[]  # יצירת רשימה לשמירת זמן החישוב של כל הקרנה.
     total_pixels=0  # אתחול מונה הפיקסלים הכולל.
     for plane_number,points in enumerate(planes,start=1):  # מעבר על כל המישורים התקינים.
         plane_start=time.perf_counter()  # תחילת מדידת הזמן של ההקרנה הנוכחית.
         projection=project_valid_plane(M, points)  # חישוב ההקרנה של המישור.
         plane_elapsed=time.perf_counter()-plane_start  # חישוב משך הזמן של ההקרנה.
         projections.append(projection)  # שמירת ההקרנה ברשימת התוצאות.
-        projection_times.append(plane_elapsed)  # שמירת זמן החישוב ברשימת הזמנים.
         height,width =projection.shape  # קבלת גובה ורוחב ההקרנה.
         total_pixels+=height*width  # הוספת מספר הפיקסלים של ההקרנה לסכום הכולל.
         plane_fps=1.0/plane_elapsed if plane_elapsed>0 else 0.0  # חישוב קצב ההקרנות לשנייה עבור המישור הנוכחי.
