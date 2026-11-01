@@ -356,26 +356,34 @@ def project_valid_plane(M, points):
     raise ValueError("A plane must contain 3 or 4 points.")  # העלאת שגיאה אם מספר הנקודות אינו נתמך.
 
 
+
 def create_video(projections, output_file, fps=30, row_step=5):
     """
     מטרת הפונקציה:
-    ליצור סרטון MP4 שבו ההקרנות נחשפות בהדרגה, שורה אחר שורה.
+    ליצור סרטון MP4 שבו כל תמונת הקרנה מוצגת בשלמותה
+    במשך פריים אחד.
+
     קלט:
-    projections - רשימת מטריצות ההקרנה.
+    projections - רשימת מטריצות ההקרנה הדו־ממדיות.
     output_file - נתיב קובץ הווידאו שייוצר.
-    fps - מספר הפריימים לשנייה.
-    row_step - מספר השורות שנחשפות בכל פריים.
+    fps - מספר הפריימים לשנייה בסרטון.
+    row_step - נשמר לצורך תאימות לקריאה הקיימת ב-main,
+               אך אינו משמש עוד ליצירת הפריימים.
+
     פלט:
-    קובץ MP4 שנכתב ישירות לדיסק.
+    קובץ MP4 שבו כל הקרנה מופיעה כפריים אחד שלם.
+
     אופן הפעולה:
-    נקבע גודל אחיד לכל הפריימים. עבור כל הקרנה נוצרות תמונות
-    שבהן נחשפות עוד שורות. כל פריים מומר לפורמט צבע ונכתב מיד
-    לקובץ הווידאו, ללא שמירת כל פריימי הסרטון בזיכרון.
+    תחילה נקבע גודל אחיד לכל פריימי הסרטון לפי ההקרנה הגדולה ביותר.
+    לאחר מכן כל הקרנה מומרת לתמונה בגווני אפור, ממורכזת בתוך פריים
+    בגודל האחיד ומומרת לפורמט BGR.
+    כל פריים נכתב ישירות לקובץ הווידאו, ללא חשיפה הדרגתית
+    וללא שמירת פריימי הסרטון בזיכרון.
     """
     if not projections:  # בדיקה אם רשימת ההקרנות ריקה.
         raise ValueError("No projections available for the video.")  # העלאת שגיאה אם אין הקרנות.
-    if row_step<1:  # בדיקה שמספר השורות לפריים הוא לפחות אחת.
-        raise ValueError("row_step must be at least 1.")  # העלאת שגיאה אם צעד החשיפה אינו תקין.
+    if fps <=0:  # בדיקה שקצב הפריימים חיובי.
+        raise ValueError("FPS must be greater than zero.")  # העלאת שגיאה אם קצב הפריימים אינו תקין.
     # קביעת גודל אחיד לכל פריימי הסרטון.
     max_height=max(p.shape[0] for p in projections)  # מציאת גובה ההקרנה הגדול ביותר.
     max_width=max(p.shape[1] for p in projections)  # מציאת רוחב ההקרנה הגדול ביותר.
@@ -383,34 +391,22 @@ def create_video(projections, output_file, fps=30, row_step=5):
     video_height=max_height+(max_height%2)  # התאמת גובה הסרטון למספר זוגי.
     video_width=max_width+(max_width%2)  # התאמת רוחב הסרטון למספר זוגי.
     fourcc=cv2.VideoWriter_fourcc(*"mp4v")  # בחירת קודק לקידוד הסרטון בפורמט MP4V.
-    writer=cv2.VideoWriter(output_file,fourcc,fps,(video_width, video_height),isColor=True)  # יצירת כותב וידאו עם הנתיב, הקודק, הקצב והגודל.
+    writer=cv2.VideoWriter(output_file,fourcc,fps,(video_width,video_height),isColor=True)  # יצירת כותב הווידאו עם הנתיב, הקודק, קצב הפריימים והגודל האחיד.
     if not writer.isOpened():  # בדיקה אם כותב הווידאו נפתח בהצלחה.
         raise RuntimeError(f"Could not create video: {output_file}")  # העלאת שגיאה אם לא ניתן ליצור את הקובץ.
     total_frames=0  # אתחול מונה הפריימים שנכתבו.
     try:  # התחלת בלוק שמבטיח שחרור משאבים בסיום.
-        for plane_number,projection in enumerate(projections,start=1):  # מעבר על כל ההקרנות.
-            height,width=projection.shape  # קבלת ממדי ההקרנה הנוכחית.
-            # חשיפת שורות נוספות בכל פריים.
-            for row_end in range(row_step,height+1,row_step):  # מעבר על מספרי השורות בקפיצות של row_step.
-                frame=np.zeros((video_height,video_width),dtype=np.uint8)  # יצירת פריים שחור.
-                image=np.clip(np.rint(projection[:row_end, :]),0,255).astype(np.uint8)  # עיגול ערכי ההקרנה, הגבלתם לטווח 0–255 והמרתם ל-8 ביט.
-                y_offset=(video_height-height)//2  # חישוב ההיסט האנכי למרכוז התמונה.
-                x_offset=(video_width-width)//2  # חישוב ההיסט האופקי למרכוז התמונה.
-                frame[y_offset:y_offset+row_end,x_offset:x_offset+width]=image  # העתקת השורות שנחשפו למיקום המתאים בפריים.
-                color_frame=cv2.cvtColor(frame,cv2.COLOR_GRAY2BGR)  # המרת הפריים מגווני אפור לפורמט בעל שלושה ערוצי צבע.
-                writer.write(color_frame)  # כתיבת הפריים לקובץ הווידאו.
-                total_frames+=1  # הגדלת מונה הפריימים.
-            # הוספת פריים מלא אם נשארו שורות שאינן מתחלקות ב-row_step.
-            if height%row_step!=0:  # בדיקה אם גובה ההקרנה מתחלק בצעד החשיפה ללא שארית.
-                frame=np.zeros((video_height,video_width),dtype=np.uint8)  # יצירת פריים שחור חדש.
-                image=np.clip(np.rint(projection),0,255).astype(np.uint8)  # המרת ההקרנה המלאה לתמונה בטווח 8 ביט.
-                y_offset=(video_height-height)//2  # חישוב ההיסט האנכי למרכוז התמונה.
-                x_offset=(video_width-width)//2  # חישוב ההיסט האופקי למרכוז התמונה.
-                frame[y_offset:y_offset+height,x_offset:x_offset+width]=image  # הצבת ההקרנה המלאה במרכז הפריים.
-                color_frame=cv2.cvtColor(frame,cv2.COLOR_GRAY2BGR)  # המרת הפריים לפורמט צבע.
-                writer.write(color_frame)  # כתיבת הפריים האחרון של ההקרנה.
-                total_frames+=1  # הגדלת מונה הפריימים.
-            print(f"Plane {plane_number}/{len(projections)} " f"written; total frames: {total_frames}")  # הצגת התקדמות יצירת הסרטון.
+        for plane_number, projection in enumerate(projections,start=1):  # מעבר על כל ההקרנות לפי הסדר.
+            height,width=projection.shape  # קבלת גובה ורוחב ההקרנה הנוכחית.
+            frame = np.zeros((video_height, video_width), dtype=np.uint8)  # יצירת פריים שחור בגודל האחיד של הסרטון.
+            image = np.clip(np.rint(projection), 0, 255).astype(np.uint8)  # עיגול ערכי ההקרנה, הגבלתם לטווח 0–255 והמרתם ל-8 ביט.
+            y_offset=(video_height-height)//2  # חישוב ההיסט האנכי למרכוז התמונה.
+            x_offset=(video_width-width)//2  # חישוב ההיסט האופקי למרכוז התמונה.
+            frame[y_offset:y_offset+height,x_offset:x_offset+width]=image  # הצבת תמונת ההקרנה המלאה במרכז הפריים.
+            color_frame = cv2.cvtColor(frame,cv2.COLOR_GRAY2BGR)  # המרת הפריים מגווני אפור לפורמט BGR בעל שלושה ערוצים.
+            writer.write(color_frame)  # כתיבת הפריים המלא לקובץ הווידאו.
+            total_frames += 1  # הגדלת מונה הפריימים לאחר כתיבת פריים אחד.
+            print(f"Plane {plane_number}/{len(projections)} "f"written; total frames: {total_frames}")  # הצגת התקדמות יצירת הסרטון.
     finally:  # בלוק שמתבצע גם במקרה של שגיאה בזמן כתיבת הסרטון.
         writer.release()  # שחרור כותב הווידאו וסגירת הקובץ.
     print(f"Video saved to: {output_file}")  # הצגת נתיב קובץ הווידאו.
@@ -535,18 +531,16 @@ def main():
     print(f"Projection FPS: {projection_fps:.2f}")  # הצגת קצב ההקרנות הממוצע.
     print(f"Projected pixels per second: {pixel_throughput:,.0f}")  # הצגת תפוקת הפיקסלים לשנייה.
     # שלב 2: יצירת הסרטון.
-    # הגדלת row_step מפחיתה את מספר הפריימים ואת משך הסרטון.
     video_fps=60  # קביעת קצב הסרטון ל-60 פריימים בשנייה.
-    row_step=5  # קביעת מספר השורות שנחשפות בכל פריים.
     video_start=time.perf_counter()  # תחילת מדידת זמן יצירת הסרטון.
-    create_video(projections,args.output_file,fps=video_fps,row_step=row_step)  # יצירת הסרטון מתוך ההקרנות.
+    create_video(projections, args.output_file, fps=video_fps)  # יצירת הסרטון מתוך ההקרנות.
     video_elapsed=time.perf_counter()-video_start  # חישוב זמן כתיבת הסרטון.
     total_elapsed=time.perf_counter()-total_start  # חישוב הזמן הכולל מאז תחילת המדידה.
     print("\n--- Overall Performance ---")  # הצגת כותרת נתוני הביצועים הכוללים.
     print(f"Video writing time: {video_elapsed:.4f} seconds")  # הצגת זמן כתיבת הסרטון.
     print(f"Total processing time: {total_elapsed:.4f} seconds")  # הצגת זמן העיבוד הכולל.
     print(f"Video playback FPS: {video_fps}")  # הצגת קצב הפריימים של הסרטון.
-    print(f"Rows revealed per frame: {row_step}")  # הצגת מספר השורות הנחשפות בכל פריים.
+    print(f"Projection calculation FPS: {projection_fps:.2f}")    # הצגת קצב חישוב ההקרנות, ללא זמן יצירת הסרטון
     overall_projection_rate = (number_of_projections/total_elapsed if total_elapsed > 0 else 0.0)  # חישוב קצב ההקרנות ביחס לזמן הכולל.
     print("End-to-end projection rate: " f"{overall_projection_rate:.2f} projections/second")  # הצגת קצב ההקרנות הכולל לשנייה.
     print("\n--- Assignment Performance Check ---")  # הצגת כותרת בדיקת יעדי הביצועים.
