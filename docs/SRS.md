@@ -1,82 +1,92 @@
-# מסמך אפיון דרישות תוכנה (SRS)
+# Software Requirements Specification (SRS)
 
-## הקרנת מישורים מתוך נפח תלת־ממדי
+## Projection of Planes from a 3D Volume
 
-### 1. מטרת המערכת
+### 1. System Purpose
 
-התוכנה קוראת נפח תלת־ממדי בפורמט NRRD והגדרות מישורים מקובץ CSV, מחשבת
-תמונת הקרנה דו־ממדית לכל מישור תקין, ומחברת את התמונות לסרטון MP4.
+The software reads a 3D volume in NRRD format and plane definitions from
+a CSV file. It computes a 2D projection image for each valid plane and
+combines the resulting images into an MP4 video.
 
-### 2. קלט ופלט
+### 2. Input and Output
 
-הפעלת התוכנה מתבצעת משורת הפקודה:
+The software is executed from the command line:
 
 ``` bash
 python project.py file.nrrd file.csv file.mp4
 ```
 
--   `file.nrrd` --- נפח תלת־ממדי ונתוני המטא־דאטה שלו.
--   `file.csv` --- הגדרות מישורים, כאשר כל שורה מכילה מספר נקודות (3
-    או 4) וקואורדינטות X,Y,Z.
--   `file.mp4` --- נתיב קובץ הווידאו שייווצר.
+-   `file.nrrd` --- A 3D volume and its metadata.
+-   `file.csv` --- Plane definitions, where each row contains either 3
+    or 4 points with X, Y, and Z coordinates.
+-   `file.mp4` --- The output video file path.
 
-**הנחת קלט:** הקואורדינטות בקובץ CSV מפורשות כאינדקסי voxel בנפח.
-המטא־דאטה של NRRD מוצג לצורכי מידע, אך אינו משמש להמרת קואורדינטות
-פיזיות.
+**Input assumption:** Coordinates in the CSV file are interpreted as
+voxel indices within the volume. NRRD metadata is displayed for
+informational purposes but is not used to convert physical coordinates.
 
-### 3. דרישות פונקציונליות
+### 3. Functional Requirements
 
-**FR-1 --- טעינת נפח:** קריאת קובץ NRRD בסדר אינדקסים C, בדיקת נפח
-תלת־ממדי, ממדים בטווח 1--1023 וטווח ערכים שאינו חורג מ־uint16; הנתונים
-מומרים ל־uint16.
+**FR-1 --- Load Volume:** Read the NRRD file using C index order, verify
+that the volume is 3D, ensure that its dimensions are within the range
+1--1023, and verify that its values do not exceed the `uint16` range.
+The data is converted to `uint16`.
 
-**FR-2 --- קריאת מישורים:** קריאת קובץ CSV, דילוג על שורת הכותרת ועל
-שורות ריקות, ופענוח מישורים המוגדרים באמצעות 3 או 4 נקודות.
+**FR-2 --- Read Plane Definitions:** Read the CSV file, skip the header
+row and empty rows, and parse planes defined by either 3 or 4 points.
 
-**FR-3 --- בדיקת גאומטריה:** בדיקת התנאים הגאומטריים למישורים באמצעות
-`EPS = 0.001`. אם הסדר המקורי אינו תקין, התוכנה בודקת תמורות של סדר
-הנקודות ומקבלת את הסדר התקין הראשון שנמצא.
+**FR-3 --- Validate Geometry:** Check the geometric conditions for
+planes defined by 3 or 4 points using `EPS = 0.001`. If the original
+point order is invalid, the software checks possible permutations of the
+points and accepts the first valid ordering found.
 
-**FR-4 --- דילוג על מישור לא תקין:** מישור שלא נמצא עבורו סדר נקודות
-תקין מדווח ומדולג. שגיאות במבנה הקלט או בטעינת הקבצים מפסיקות את העיבוד.
+**FR-4 --- Skip Invalid Planes:** A plane for which no valid point
+ordering is found is reported and skipped. Errors in the input structure
+or file loading stop the processing.
 
-**FR-5 --- חישוב הקרנה:** יצירת מטריצת הקרנה דו־ממדית לכל מישור תקין.
-ממדי התמונה ומיקומי הדגימות מחושבים לפי המרחקים הגאומטריים בין הנקודות.
+**FR-5 --- Compute Projections:** Generate a 2D projection matrix for
+each valid plane. Image dimensions and sample positions are calculated
+according to the geometric distances between the points.
 
-**FR-6 --- דגימת נפח:** דגימת ערכי הנפח באמצעות אינטרפולציה טריליניארית.
-נקודות מחוץ לנפח, וכן שכנים מחוץ לגבולות הנדרשים לאינטרפולציה, מקבלים
-ערך 0.
+**FR-6 --- Sample Volume Values:** Sample volume values using trilinear
+interpolation. Points outside the volume, as well as neighboring voxels
+outside the required interpolation boundaries, receive a value of 0.
 
-**FR-7 --- יצירת וידאו:** יצירת סרטון MP4 בקצב של 60 פריימים לשנייה. כל
-הקרנה ממורכזת בתוך פריים שחור בגודל אחיד; ממדי הווידאו מותאמים למספר
-זוגי של פיקסלים. ערכי ההקרנה מעוגלים, מוגבלים לטווח 0--255 ומומרים ל־8
-ביט.
+**FR-7 --- Generate Video:** Create an MP4 video at 60 frames per
+second. Each projection is centered inside a black frame of uniform
+dimensions. Video dimensions are adjusted to even pixel values.
+Projection values are rounded, clipped to the range 0--255, and
+converted to 8-bit values.
 
-**FR-8 --- שמירת סדר:** סדר הפריימים בסרטון יהיה סדר המישורים התקינים
-כפי שהתקבלו מקובץ CSV.
+**FR-8 --- Preserve Order:** The video frames must follow the order of
+the valid planes as they appear in the CSV file.
 
-**FR-9 --- דיווח ביצועים:** הצגת זמני חישוב, מספר הקרנות, ממדי ההקרנות,
-קצב הקרנות לשנייה וקצב עיבוד פיקסלים. חימום Numba אינו נכלל במדידת זמן
-ההקרנות, אך נכלל בזמן הכולל.
+**FR-9 --- Report Performance:** Display computation times, the number
+of projections, projection dimensions, projections per second, and pixel
+processing throughput. Numba warm-up is excluded from projection timing
+but included in the total processing time.
 
-### 4. דרישות לא־פונקציונליות
+### 4. Non-functional Requirements
 
-**NFR-1 --- ביצועים:** יעד הביצועים הוא לפחות 30 הקרנות לשנייה, עם יעד
-רצוי של 100 הקרנות לשנייה. המדד מתייחס לקצב חישוב ההקרנות ולא לקצב הצגת
-הווידאו.
+**NFR-1 --- Performance:** The minimum performance target is 30
+projections per second, with a desired target of 100 projections per
+second. This metric refers to projection computation, not video
+playback.
 
-**NFR-2 --- יעילות:** שימוש ב־Numba להאצת חישובים גאומטריים ודגימתיים,
-וב־NumPy/OpenCV לעיבוד הנתונים וליצירת הווידאו.
+**NFR-2 --- Efficiency:** Use Numba to accelerate geometric and sampling
+computations, and NumPy/OpenCV for data processing and video generation.
 
-**NFR-3 --- תחזוקתיות:** הפרדה בין טעינת קלט, בדיקת גאומטריה, חישוב
-הקרנה ויצירת וידאו.
+**NFR-3 --- Maintainability:** Separate input loading, geometry
+validation, projection computation, and video generation into distinct
+components.
 
-### 5. נקודות שיש לאמת בהמשך
+### 5. Items Requiring Further Verification
 
--   לוודא שסדר הנקודות במישורים בעלי ארבע נקודות תואם במדויק להגדרת
-    המטלה ולנוסחאות ההקרנה.
--   לוודא אם נדרשת תמיכה בקואורדינטות פיזיות; במימוש הנוכחי נעשה שימוש
-    ישיר בקואורדינטות CSV כאינדקסי voxel.
--   לבדוק אם נדרש מיפוי ערכים אחר לווידאו, משום שערכים מעל 255 נחתכים
-    ל־255.
--   לוודא אם יעד ה־FPS נמדד על חישוב ההקרנות בלבד או על כלל התהליך.
+-   Verify that the point ordering for four-point planes matches the
+    assignment's exact definition and projection formulas.
+-   Verify whether physical coordinates are required. The current
+    implementation uses CSV coordinates directly as voxel indices.
+-   Check whether a different value mapping is required for video
+    output, since values above 255 are clipped to 255.
+-   Verify whether the FPS target applies only to projection computation
+    or to the entire processing pipeline.

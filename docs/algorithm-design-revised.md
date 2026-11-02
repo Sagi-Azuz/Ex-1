@@ -1,103 +1,139 @@
-# תכנון האלגוריתם --- הטלת מישור על נפח תלת־ממדי
+# Algorithm Design --- Plane Projection onto a 3D Volume
 
-## 1. מטרת האלגוריתם
+## 1. Algorithm Purpose
 
-האלגוריתם מקבל נפח תלת־ממדי `M` ומישור המוגדר באמצעות שלוש או ארבע
-נקודות, ומחשב תמונת הקרנה דו־ממדית `E` מתוך ערכי הנפח לאורך המישור.
+The algorithm receives a 3D volume `M` and a plane defined by either
+three or four points. It computes a 2D projection image `E` from the
+volume values sampled along the plane.
 
-## 2. מערכת קואורדינטות ומבנה הנפח
+## 2. Coordinate System and Volume Structure
 
-הנפח נשמר במערך שצורתו `(sz, sy, sx)`, ולכן הגישה לווקסל מתבצעת בסדר
-`M[z, y, x]`.
+The volume is stored in an array with shape `(sz, sy, sx)`. Therefore,
+voxel access follows the order `M[z, y, x]`.
 
-קואורדינטות הנקודות בקובץ CSV משמשות ישירות כקואורדינטות voxel
-`(x,y,z)`. נתוני `space`, `space origin` ו־`space directions` של NRRD
-מוצגים, אך אינם משמשים להמרת הקואורדינטות.
+Coordinates from the CSV file are used directly as voxel coordinates
+`(x, y, z)`. NRRD metadata fields such as `space`, `space origin`, and
+`space directions` are displayed but are not used to convert
+coordinates.
 
-## 3. בדיקת תקינות וסידור הנקודות
+## 3. Point Validation and Ordering
 
-לכל מישור נבדקים התנאים הגאומטריים המתאימים לשלוש או לארבע נקודות, תוך
-שימוש בסבילות `EPS = 0.001`.
+For each plane, the applicable geometric conditions for three-point or
+four-point definitions are checked using a tolerance of `EPS = 0.001`.
 
-אם סדר הנקודות המקורי אינו עומד בתנאים, נבדקות תמורות אפשריות של
-הנקודות. הסידור התקין הראשון שנמצא משמש לחישוב ההקרנה. אם לא נמצא סידור
-תקין, המישור מדולג.
+If the original point order does not satisfy the conditions, possible
+permutations of the points are checked. The first valid ordering found
+is used to compute the projection. If no valid ordering is found, the
+plane is skipped.
 
-## 4. חישוב ממדי תמונת ההקרנה
+## 4. Projection Image Dimensions
 
-נסמן: - `H` --- גובה תמונת ההקרנה בפיקסלים. - `W` --- רוחב תמונת ההקרנה
-בפיקסלים.
+Let:
 
-במישור המוגדר באמצעות שלוש נקודות: - `H` מחושב לפי המרחק בין `a`
-ל־`b`. - `W` מחושב לפי המרחק בין `b` ל־`c`.
+-   `H` --- Projection image height in pixels.
+-   `W` --- Projection image width in pixels.
 
-במישור המוגדר באמצעות ארבע נקודות: - `H` מחושב לפי המרחק בין `a`
-ל־`c`. - `W` מחושב לפי המרחק בין `c` ל־`d`.
+For a plane defined by three points:
 
-כל ממד מעוגל באמצעות `round()` ומוגבל למינימום של פיקסל אחד:
+-   `H` is calculated from the distance between `a` and `b`.
+-   `W` is calculated from the distance between `b` and `c`.
 
-\[ H=`\max`{=tex}(1,`\operatorname{round}`{=tex}(D_H)), `\qquad`{=tex}
-W=`\max`{=tex}(1,`\operatorname{round}`{=tex}(D_W)) \]
+For a plane defined by four points:
 
-## 5. חישוב שורות ודגימות במישור
+-   `H` is calculated from the distance between `a` and `c`.
+-   `W` is calculated from the distance between `c` and `d`.
 
-עבור כל שורה `j`, כאשר `0 ≤ j < H`, מחושב מיקום יחסי במרכז מקטע הגובה:
+Each dimension is rounded using `round()` and limited to a minimum of
+one pixel:
 
-\[ u=`\frac{j+0.5}{H}`{=tex} \]
+\[ H = `\max`{=tex}(1, `\operatorname{round}`{=tex}(D_H)) \]
 
-קצות השורה במרחב התלת־ממדי מחושבים לפי סוג המישור:
+\[ W = `\max`{=tex}(1, `\operatorname{round}`{=tex}(D_W)) \]
 
-**שלוש נקודות:** \[ A_1=a+u(b-a), `\qquad `{=tex}A_2=a+u(c-a) \]
+## 5. Row and Sample Computation on the Plane
 
-**ארבע נקודות:** \[ A_1=a+u(c-a), `\qquad `{=tex}A_2=b+u(d-b) \]
+For each row `j`, where `0 \leq j < H`, a relative position is
+calculated at the center of the corresponding height segment:
 
-לאחר מכן מחושב המרחק בין קצות השורה, ומספר הדגימות נקבע כך:
+\[ u = `\frac{j + 0.5}{H}`{=tex} \]
 
-\[
-N=`\max`{=tex}(1,`\operatorname{round}`{=tex}(`\operatorname{dist}`{=tex}(A_1,A_2)))
-\]
+The endpoints of the row in 3D space are calculated according to the
+plane type.
 
-מיקום כל דגימה לאורך השורה מחושב במרכז מקטע אחיד:
+**Three-point plane:**
 
-\[ v=`\frac{i+0.5}{N}`{=tex}, `\qquad`{=tex} P=A_1+v(A_2-A_1) \]
+\[ A_1 = a + u(b-a) \]
 
-כאשר `i` הוא אינדקס הדגימה, בטווח `0 ≤ i < N`.
+\[ A_2 = a + u(c-a) \]
 
-## 6. מיקום הדגימות בתמונת הפלט
+**Four-point plane:**
 
-השורה ממורכזת אופקית בתוך תמונת ההקרנה. מיקום תחילת השורה מחושב כך:
+\[ A_1 = a + u(c-a) \]
 
-\[
-x\_{`\text{start}`{=tex}}=`\left`{=tex}`\lfloor`{=tex}`\frac{W-N}{2}`{=tex}`\right`{=tex}`\rfloor`{=tex}
-\]
+\[ A_2 = b + u(d-b) \]
 
-כל דגימה נשמרת בעמודה:
+The distance between the row endpoints is then calculated, and the
+number of samples is determined as follows:
 
-\[ x=x\_{`\text{start}`{=tex}}+i \]
+\[ N = `\max`{=tex}(1,
+`\operatorname{round}`{=tex}(`\operatorname{dist}`{=tex}(A_1,A_2))) \]
 
-דגימות שמיקומן מחוץ לטווח העמודות `0` עד `W-1` אינן נשמרות. מטריצת
-ההקרנה מאותחלת באפס, ולכן אזורים שלא קיבלו דגימה נשארים אפס.
+The position of each sample along the row is calculated at the center of
+an equally sized segment:
 
-## 7. דגימת ערכים מתוך הנפח
+\[ v = `\frac{i + 0.5}{N}`{=tex} \]
 
-אם נקודת הדגימה נמצאת מחוץ לגבולות הנפח, ערכה נקבע ל־0. אחרת, ערכה מחושב
-באמצעות אינטרפולציה טריליניארית משמונת הווקסלים הסמוכים.
+\[ P = A_1 + v(A_2-A_1) \]
 
-אם אחת הקואורדינטות של נקודת הדגימה שלמה, והנקודה נמצאת על מיקום voxel
-מדויק, מוחזר ערך הווקסל עצמו. ווקסלים מחוץ לגבולות הנפח מקבלים ערך 0 גם
-במהלך חישוב האינטרפולציה.
+where `i` is the sample index, in the range `0 \leq i < N`.
 
-## 8. יצירת סרטון
+## 6. Sample Placement in the Output Image
 
-לאחר חישוב כל ההקרנות התקינות: 1. נקבעים הגובה והרוחב המרביים מבין כל
-ההקרנות. 2. אם אחד מממדי הווידאו אי־זוגי, הוא מוגדל בפיקסל אחד. 3. כל
-הקרנה ממורכזת בתוך פריים שחור בגודל האחיד. 4. ערכי ההקרנה מעוגלים,
-נחתכים לטווח 0--255 ומומרים ל־`uint8`. 5. הפריימים נכתבים לקובץ MP4
-באמצעות OpenCV בקצב של 60 FPS.
+Each row is horizontally centered within the projection image. The
+starting column is calculated by subtracting the number of samples from
+the image width, dividing the remaining space by two, and rounding down
+to the nearest integer:
 
-## 9. מדידת ביצועים
+\[ x\_{`\text{start}`{=tex}} =
+`\left`{=tex}`\lfloor `{=tex}`\frac{W-N}{2}`{=tex}
+`\right`{=tex}`\rfloor`{=tex} \]
 
-לפני מדידת ההקרנות מתבצע חימום לפונקציות Numba. זמן החימום אינו נכלל
-במדידת קצב ההקרנות, אך נכלל בזמן הכולל של התהליך. נמדדים זמן ההקרנות,
-מספר ההקרנות, קצב ההקרנות לשנייה וקצב הפיקסלים לשנייה. זמן יצירת הווידאו
-נמדד בנפרד.
+Each sample is stored in the column:
+
+\[ x = x\_{`\text{start}`{=tex}} + i \]
+
+Samples whose column positions are outside the range `0` to `W-1` are
+not stored. The projection matrix is initialized with zeros, so areas
+that do not receive a sample remain zero.
+
+## 7. Sampling Values from the Volume
+
+If a sample point is outside the volume boundaries, its value is set to
+0. Otherwise, its value is calculated using trilinear interpolation from
+the eight neighboring voxels.
+
+If the sample point lies exactly at a voxel location, the voxel's value
+is returned directly. Voxels outside the volume boundaries are assigned
+a value of 0 during interpolation as well.
+
+## 8. Video Generation
+
+After all valid projections have been computed:
+
+1.  The maximum height and width among all projections are determined.
+2.  If either video dimension is odd, it is increased by one pixel.
+3.  Each projection is centered inside a black frame of uniform
+    dimensions.
+4.  Projection values are rounded, clipped to the range 0--255, and
+    converted to `uint8`.
+5.  The frames are written to an MP4 file using OpenCV at 60 FPS.
+
+## 9. Performance Measurement
+
+Before projection timing begins, the Numba functions are warmed up.
+Warm-up time is excluded from projection FPS measurements but included
+in the total processing time.
+
+The projection computation time, number of projections, projections per
+second, and pixels per second are measured. Video generation time is
+measured separately.
