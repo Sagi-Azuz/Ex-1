@@ -261,18 +261,35 @@ def validate_plane_geometry(points):
     אורכים חיוביים וקו־מישוריות של הנקודות.
     """
     EPS=0.001  # הגדרת סף ההשוואה המספרי לבדיקות הגאומטריות.
-    if len(points)==3:  # בדיקה אם המישור מוגדר באמצעות שלוש נקודות.
-        a,b,c=[np.asarray(p,dtype=float) for p in points]  # המרת הנקודות למערכים מספריים.
-        dab=dist(a,b)  # חישוב המרחק בין A ל-B.
-        dac=dist(a,c)  # חישוב המרחק בין A ל-C.
-        dbc=dist(b,c)  # חישוב המרחק בין B ל-C.
-        print(f"  dab = {dab:.6f}, dac = {dac:.6f}, dbc = {dbc:.6f}")  # הצגת המרחקים לצורכי בדיקה.
-        print(f"  |dab - dac| = {abs(dab - dac):.6f}")  # הצגת ההפרש בין המרחקים AB ו-AC.
-        valid_equal_sides=abs(dab -dac)<EPS  # בדיקה אם המרחקים AB ו-AC שווים בקירוב.
-        valid_lengths=dab>0 and dac>0 and dbc>0  # בדיקה שכל המרחקים חיוביים.
-        print(f"  Equal sides: {valid_equal_sides}")  # הצגת תוצאת בדיקת שוויון הצלעות.
-        print(f"  Positive lengths: {valid_lengths}")  # הצגת תוצאת בדיקת האורכים.
-        return valid_equal_sides and valid_lengths  # החזרת True רק אם שני התנאים מתקיימים.
+    if len(points) == 3:  # בדיקת מישור המוגדר על ידי שלוש נקודות
+        # המרת הנקודות למערכי NumPy לצורך חישובים וקטוריים
+        a,b,c=[np.asarray(p, dtype=float) for p in points]
+        # חישוב המרחקים בין כל זוג נקודות
+        dab=dist(a,b)  # המרחק בין A ל-B
+        dac=dist(a,c)  # המרחק בין A ל-C
+        dbc=dist(b,c)  # המרחק בין B ל-C
+        print(f"  dab = {dab:.6f}, dac = {dac:.6f}, dbc = {dbc:.6f}")
+        print(f"  |dab - dac| = {abs(dab - dac):.6f}")
+        # בדיקה שהמרחקים AB ו-AC שווים בקירוב לפי EPS
+        valid_equal_sides=abs(dab-dac)<EPS
+        # בדיקה שכל המרחקים בין הנקודות חיוביים
+        valid_lengths=dab>0 and dac>0 and dbc>0
+        # חישוב המכפלה הווקטורית של AB ו-AC
+        # אם שלוש הנקודות נמצאות על אותו קו, גודל המכפלה יהיה אפס
+        cross_product=np.cross(b-a,c-a)
+        # חישוב שטח המקבילית שנוצרת על ידי שני הווקטורים
+        parallelogram_area=np.linalg.norm(cross_product)
+        # חישוב אורך הצלע הארוכה ביותר לצורך קבלת גובה גאומטרי
+        longest_side=max(dab,dac,dbc)
+        # חלוקת שטח המקבילית באורך הצלע הארוכה נותנת גובה
+        # כך ניתן להשוות את הגובה לסף EPS, שהוא סף של מרחק
+        valid_non_collinear =(longest_side>0 and parallelogram_area/longest_side>EPS)
+        # הדפסת תוצאות הבדיקות לצורך איתור שגיאות
+        print(f"  Equal sides: {valid_equal_sides}")
+        print(f"  Positive lengths: {valid_lengths}")
+        print(f"  Non-collinear points: {valid_non_collinear}")
+        # המישור תקין רק אם כל התנאים מתקיימים
+        return (valid_equal_sides and valid_lengths and valid_non_collinear)
     if len(points)==4:  # בדיקה אם המישור מוגדר באמצעות ארבע נקודות.
         a1,a2,b,c=[np.asarray(p,dtype=float) for p in points]  # המרת ארבע הנקודות למערכים מספריים.
         side1=dist(a1,b)  # חישוב אורך הצלע הראשונה.
