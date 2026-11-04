@@ -1,3 +1,4 @@
+
 import math  # ספרייה לפעולות מתמטיות, כגון שורש ריבועי, עיגול וחישוב רצפה.
 import numpy as np  # ספרייה לעבודה עם מערכים וחישובים מספריים.
 import nrrd  # ספרייה לקריאה של נפחים תלת־ממדיים מקובצי NRRD.
@@ -87,8 +88,7 @@ def trilinear_interpolation(M,P):
     dz=z-z0  # חישוב החלק היחסי בין האינדקסים בציר Z.
     if dx==0.0 and dy==0.0 and dz==0.0:  # בדיקה אם כל הקואורדינטות שלמות.
         return get_voxel(M,x0,y0,z0)  # החזרת ערך הווקסל ישירות ללא אינטרפולציה.
-    # חישוב המשקלים של שמונת הווקסלים המקיפים את נקודת הדגימה.
-    w000=(1-dx)*(1-dy)*(1-dz)  # חישוב משקל הפינה הראשונה.
+    w000=(1-dx)*(1-dy)*(1-dz)  # חישוב משקל הפינה הראשונה.  # חישוב המשקלים של שמונת הווקסלים המקיפים את נקודת הדגימה.
     w001=(1-dx)*(1-dy)*dz  # חישוב משקל הפינה השנייה.
     w010=(1-dx)*dy*(1-dz)  # חישוב משקל הפינה השלישית.
     w011=(1-dx)*dy*dz  # חישוב משקל הפינה הרביעית.
@@ -96,8 +96,7 @@ def trilinear_interpolation(M,P):
     w101=dx*(1-dy)*dz  # חישוב משקל הפינה השישית.
     w110=dx*dy*(1-dz)  # חישוב משקל הפינה השביעית.
     w111=dx*dy*dz  # חישוב משקל הפינה השמינית.
-    # קריאת ערכי שמונת הווקסלים מהנפח.
-    c000=get_voxel(M,x0,y0,z0)  # קריאת ערך הווקסל הראשון.
+    c000=get_voxel(M,x0,y0,z0)  # קריאת ערך הווקסל הראשון.  # קריאת ערכי שמונת הווקסלים מהנפח.
     c001=get_voxel(M,x0,y0,z1)  # קריאת ערך הווקסל השני.
     c010=get_voxel(M,x0,y1,z0)  # קריאת ערך הווקסל השלישי.
     c011=get_voxel(M,x0,y1,z1)  # קריאת ערך הווקסל הרביעי.
@@ -105,8 +104,7 @@ def trilinear_interpolation(M,P):
     c101=get_voxel(M,x1,y0,z1)  # קריאת ערך הווקסל השישי.
     c110=get_voxel(M,x1,y1,z0)  # קריאת ערך הווקסל השביעי.
     c111=get_voxel(M,x1,y1,z1)  # קריאת ערך הווקסל השמיני.
-    # חישוב הערך המשוער באמצעות סכום ערכי הווקסלים המשוקללים.
-    return (w000*c000+w001*c001+w010*c010+w011*c011+w100*c100+w101*c101+w110*c110+w111*c111)
+    return (w000*c000+w001*c001+w010*c010+w011*c011+w100*c100+w101*c101+w110*c110+w111*c111)  # חישוב הערך המשוער באמצעות סכום ערכי הווקסלים המשוקללים.
 
 
 @njit(cache=True,parallel=True)  # האצת ליבת ההקרנה ושימוש בהרצה מקבילית של שורות התמונה.
@@ -131,8 +129,7 @@ def project_plane_core(M,a,b,c,d,is_four_points):
     לבסוף, ערכי הדגימה נשמרים במטריצת ההקרנה.
     """
     sz,sy,sx=M.shape  # קבלת ממדי הנפח בצירים Z, Y, X.
-    # קביעת ממדי תמונת ההקרנה בהתאם למספר הנקודות.
-    if is_four_points:  # בדיקה אם המישור מוגדר באמצעות ארבע נקודות.
+    if is_four_points:  # בדיקה אם המישור מוגדר באמצעות ארבע נקודות.  # קביעת ממדי תמונת ההקרנה בהתאם למספר הנקודות.
         H=max(1,round(dist(a,c)))  # קביעת גובה התמונה לפי המרחק בין A ל-C.
         W=max(1,round(dist(c,d)))  # קביעת רוחב התמונה לפי המרחק בין C ל-D.
     else:  # המישור מוגדר באמצעות שלוש נקודות.
@@ -141,8 +138,7 @@ def project_plane_core(M,a,b,c,d,is_four_points):
     E=np.zeros((H,W),dtype=np.float64)  # יצירת מטריצת הקרנה בגודל H על W, המאותחלת באפס.
     for j in prange(H):  # מעבר מקבילי על שורות תמונת ההקרנה.
         u=(j+0.5)/H  # חישוב מיקום יחסי לאורך הגובה, במרכז כל מקטע דגימה.
-        # חישוב שתי נקודות הקצה של השורה הנוכחית.
-        if is_four_points:  # בחירת הגאומטריה המתאימה למישור בעל ארבע נקודות.
+        if is_four_points:  # בחירת הגאומטריה המתאימה למישור בעל ארבע נקודות.  # חישוב שתי נקודות הקצה של השורה הנוכחית.
             A1=a+u*(c-a)  # חישוב הקצה הראשון באמצעות אינטרפולציה בין A ל-C.
             A2=b+u*(d-b)  # חישוב הקצה השני באמצעות אינטרפולציה בין B ל-D.
         else:  # בחירת הגאומטריה המתאימה למישור בעל שלוש נקודות.
@@ -156,8 +152,7 @@ def project_plane_core(M,a,b,c,d,is_four_points):
             v=(i +0.5)/N  # חישוב המיקום היחסי של הדגימה לאורך השורה.
             P=A1+v*(A2-A1)  # חישוב נקודת הדגימה במרחב התלת־ממדי.
             px,py,pz=P  # חילוץ קואורדינטות נקודת הדגימה.
-            # בדיקה אם נקודת הדגימה נמצאת בתוך גבולות הנפח.
-            if (px<0 or px>=sx or py<0 or py>=sy or pz<0 or pz>=sz):
+            if (px<0 or px>=sx or py<0 or py>=sy or pz<0 or pz>=sz):  # בדיקה אם נקודת הדגימה נמצאת בתוך גבולות הנפח.
                 value=0.0  # קביעת ערך אפס לנקודה שנמצאת מחוץ לנפח.
             else:  # נקודת הדגימה נמצאת בתוך גבולות הנפח.
                 value=trilinear_interpolation(M,P)  # חישוב ערך הדגימה באמצעות אינטרפולציה תלת־ליניארית.
@@ -215,33 +210,39 @@ def project_plane_4(M,a,b,c,d):
     return project_plane_core(M,a,b,c,d,True)  # הפעלת ליבת ההקרנה במצב של ארבע נקודות והחזרת התוצאה.
 
 
-def validate_volume(M):
-    """
-    מטרת הפונקציה:
-    לבדוק שהנפח שנטען עומד בדרישות התוכנית.
+def validate_volume(M):  # הגדרת פונקציה המקבלת את מערך הנפח התלת־ממדי.
+    """  # תחילת תיעוד הפונקציה.
+    מטרת הפונקציה:  # הסבר על מטרת הפונקציה.
+    לבדוק שהנפח שנטען עומד בדרישות התוכנית.  # בדיקת תקינות הנפח לפני המשך העיבוד.
 
-    קלט:
-    M - מערך הנפח התלת־ממדי.
+    קלט:  # פירוט הקלט של הפונקציה.
+    M - מערך הנפח התלת־ממדי.  # המערך שמכיל את ערכי ה־Voxel.
 
-    פלט:
-    אין ערך מוחזר. אם הנפח אינו תקין, הפונקציה מעלה ValueError.
+    פלט:  # פירוט הפלט של הפונקציה.
+    אין ערך מוחזר. אם הנפח אינו תקין, הפונקציה מעלה ValueError.  # במקרה של נתונים לא תקינים תיזרק שגיאה.
 
-    אופן הפעולה:
-    נבדקים מספר הממדים, גודל כל ממד וסוג הנתונים של המערך.
-    """
-    if M.ndim!=3:  # בדיקה שהנפח מכיל בדיוק שלושה ממדים.
-        raise ValueError("Volume must be a 3D matrix")  # עצירת התוכנית אם הנפח אינו תלת־ממדי.
-    sz,sy,sx=M.shape  # קבלת ממדי הנפח בסדר Z, Y, X.
-    if not all(1<=size<2**10 for size in (sx,sy,sz)):  # בדיקה שכל ממד נמצא בין 1 ל-1023.
-        raise ValueError(  # העלאת שגיאה אם אחד ממדי הנפח אינו תקין.
-            f"Invalid volume dimensions: x={sx}, y={sy}, z={sz}. " 
-            "Each dimension must be between 1 and 1023.")
-    # הגדרת סוגי הנתונים שהפונקציה יודעת לקבל.
-    allowed_types=(np.dtype("uint8"),np.dtype("uint16"),np.dtype("uint32"))
-    if M.dtype not in allowed_types:  # בדיקה שסוג הנתונים של הנפח נמצא ברשימה המותרת.
+    אופן הפעולה:  # הסבר על תהליך הבדיקה.
+    נבדקים מספר הממדים, גודל כל ממד וסוג הנתונים של המערך.  # בדיקת שלושת התנאים הנדרשים.
+    """  # סוף תיעוד הפונקציה.
+
+    if M.ndim!=3:  # בדיקה שמספר הממדים במערך הוא בדיוק שלושה.
+        raise ValueError("Volume must be a 3D matrix")  # העלאת שגיאה אם המערך אינו תלת־ממדי.
+    sz,sy,sx=M.shape  # שמירת גדלי הממדים במשתנים לפי הסדר Z, Y, X.
+    if not all(1<=size<2**10 for size in (sx,sy,sz)):  # בדיקה שכל אחד משלושת הממדים הוא בין 1 ל־1023.
+        raise ValueError(  # העלאת שגיאה אם אחד מממדי הנפח אינו עומד בדרישות.
+            f"Invalid volume dimensions: x={sx}, y={sy}, z={sz}. "  # הצגת הגדלים שהתקבלו בפועל.
+            "Each dimension must be between 1 and 1023."  # הסבר על טווח הגדלים המותר.
+        )  # סוף העלאת השגיאה.
+    allowed_types = (  # הגדרת רשימת סוגי הנתונים שהפונקציה רשאית לקבל.
+        np.dtype("uint8"),  # מספרים שלמים ללא סימן בגודל 8 ביט.
+        np.dtype("uint16"),  # מספרים שלמים ללא סימן בגודל 16 ביט.
+        np.dtype("uint32"),  # מספרים שלמים ללא סימן בגודל 32 ביט.
+    )  # סוף הגדרת רשימת סוגי הנתונים.
+    if M.dtype not in allowed_types:  # בדיקה שסוג הנתונים של המערך נמצא ברשימת הסוגים המותרים.
         raise ValueError(  # העלאת שגיאה אם סוג הנתונים אינו נתמך.
-            f"Invalid volume data type: {M.dtype}. " 
-            "Expected uint8, uint16 or uint32.")
+            f"Invalid volume data type: {M.dtype}. "  # הצגת סוג הנתונים שהתקבל בפועל.
+            "Expected uint8, uint16 or uint32."  # הצגת סוגי הנתונים שהפונקציה מאפשרת.
+        )  # סוף העלאת השגיאה.
 
 
 def validate_plane_geometry(points):
@@ -261,51 +262,44 @@ def validate_plane_geometry(points):
     אורכים חיוביים וקו־מישוריות של הנקודות.
     """
     EPS=0.001  # הגדרת סף ההשוואה המספרי לבדיקות הגאומטריות.
+
     if len(points) == 3:  # בדיקת מישור המוגדר על ידי שלוש נקודות
-        # המרת הנקודות למערכי NumPy לצורך חישובים וקטוריים
-        a,b,c=[np.asarray(p, dtype=float) for p in points]
-        # חישוב המרחקים בין כל זוג נקודות
-        dab=dist(a,b)  # המרחק בין A ל-B
+        a,b,c=[np.asarray(p, dtype=float) for p in points]  # המרת הנקודות למערכי NumPy לצורך חישובים וקטוריים
+        dab=dist(a,b)  # המרחק בין A ל-B  # חישוב המרחקים בין כל זוג נקודות
         dac=dist(a,c)  # המרחק בין A ל-C
         dbc=dist(b,c)  # המרחק בין B ל-C
         print(f"  dab = {dab:.6f}, dac = {dac:.6f}, dbc = {dbc:.6f}")
         print(f"  |dab - dac| = {abs(dab - dac):.6f}")
-        # בדיקה שהמרחקים AB ו-AC שווים בקירוב לפי EPS
-        valid_equal_sides=abs(dab-dac)<EPS
-        # בדיקה שכל המרחקים בין הנקודות חיוביים
-        valid_lengths=dab>0 and dac>0 and dbc>0
-        # חישוב המכפלה הווקטורית של AB ו-AC
-        # אם שלוש הנקודות נמצאות על אותו קו, גודל המכפלה יהיה אפס
-        cross_product=np.cross(b-a,c-a)
-        # חישוב שטח המקבילית שנוצרת על ידי שני הווקטורים
-        parallelogram_area=np.linalg.norm(cross_product)
-        # חישוב אורך הצלע הארוכה ביותר לצורך קבלת גובה גאומטרי
-        longest_side=max(dab,dac,dbc)
-        # חלוקת שטח המקבילית באורך הצלע הארוכה נותנת גובה
-        # כך ניתן להשוות את הגובה לסף EPS, שהוא סף של מרחק
-        valid_non_collinear =(longest_side>0 and parallelogram_area/longest_side>EPS)
-        # הדפסת תוצאות הבדיקות לצורך איתור שגיאות
-        print(f"  Equal sides: {valid_equal_sides}")
+        valid_equal_sides=abs(dab-dac)<EPS  # בדיקה שהמרחקים AB ו-AC שווים בקירוב לפי EPS
+        valid_lengths=dab>0 and dac>0 and dbc>0  # בדיקה שכל המרחקים בין הנקודות חיוביים
+        cross_product=np.cross(b-a,c-a)  # חישוב המכפלה הווקטורית של AB ו-AC אם שלוש הנקודות נמצאות על אותו קו, גודל המכפלה יהיה אפס
+        parallelogram_area=np.linalg.norm(cross_product)  # חישוב שטח המקבילית שנוצרת על ידי שני הווקטורים
+        longest_side=max(dab,dac,dbc)  # חישוב אורך הצלע הארוכה ביותר לצורך קבלת גובה גאומטרי
+        valid_non_collinear =(longest_side>0 and parallelogram_area/longest_side>EPS)  # חלוקת שטח המקבילית באורך הצלע הארוכה נותנת גובה כך ניתן להשוות את הגובה לסף EPS, שהוא סף של מרחק
+        print(f"  Equal sides: {valid_equal_sides}")  # הדפסת תוצאות הבדיקות לצורך איתור שגיאות
         print(f"  Positive lengths: {valid_lengths}")
         print(f"  Non-collinear points: {valid_non_collinear}")
-        # המישור תקין רק אם כל התנאים מתקיימים
-        return (valid_equal_sides and valid_lengths and valid_non_collinear)
+        return (valid_equal_sides and valid_lengths and valid_non_collinear)  # המישור תקין רק אם כל התנאים מתקיימים
     if len(points)==4:  # בדיקה אם המישור מוגדר באמצעות ארבע נקודות.
         a1,a2,b,c=[np.asarray(p,dtype=float) for p in points]  # המרת ארבע הנקודות למערכים מספריים.
         side1=dist(a1,b)  # חישוב אורך הצלע הראשונה.
         side2=dist(a2,c)  # חישוב אורך הצלע השנייה.
         base1=dist(a1,a2)  # חישוב אורך הבסיס הראשון.
         base2=dist(b,c)  # חישוב אורך הבסיס השני.
-        # חישוב מדד הקו־מישוריות באמצעות המכפלה המשולשת הסקלרית.
-        coplanarity=abs(np.dot(np.cross(a2-a1,b-a1),c-a1))
+        normal=np.cross(a2-a1,b-a1)  # חישוב וקטור הנורמל למישור שמוגדר על ידי a1, a2 ו-b.
+        normal_length=np.linalg.norm(normal)  # חישוב אורך וקטור הנורמל.
+        if normal_length==0:  # בדיקה שהנקודות a1, a2 ו-b אינן נמצאות על אותו קו.
+            coplanarity=float("inf")  # אם אין מישור מוגדר, הבדיקה נכשלת.
+        else:
+            coplanarity=abs(np.dot(normal,c-a1))/normal_length  # חישוב המרחק של הנקודה c מהמישור.
         print(f"  side1 = {side1:.6f}, side2 = {side2:.6f}")  # הצגת אורכי הצלעות.
         print(f"  base1 = {base1:.6f}, base2 = {base2:.6f}")  # הצגת אורכי הבסיסים.
-        print(f"  |side1 - side2| = {abs(side1 - side2):.6f}")  # הצגת ההפרש בין הצלעות.
-        print(f"  Coplanarity value = {coplanarity:.6f}")  # הצגת מדד הקו־מישוריות.
+        print(f"  |side1 - side2| = {abs(side1 - side2):.6f}")  # הצגת ההפרש בין אורכי הצלעות.
+        print(f"  Coplanarity distance = {coplanarity:.6f}")  # הצגת המרחק של הנקודה c מהמישור.
         valid_equal_sides=abs(side1-side2)<EPS  # בדיקה אם אורכי הצלעות שווים בקירוב.
+        valid_coplanarity=coplanarity<EPS  # בדיקה אם ארבע הנקודות נמצאות באותו מישור בקירוב.
         valid_bases=base1<=base2  # בדיקה שסדר אורכי הבסיסים עומד בתנאי הקוד.
         valid_lengths=(side1>0 and side2>0 and base1>0 and base2>0)  # בדיקה שכל האורכים חיוביים.
-        valid_coplanarity=coplanarity<EPS  # בדיקה שמדד הקו־מישוריות קטן מהסף.
         print(f"  Equal sides: {valid_equal_sides}")  # הצגת תוצאת בדיקת שוויון הצלעות.
         print(f"  Base order: {valid_bases}")  # הצגת תוצאת בדיקת סדר הבסיסים.
         print(f"  Positive lengths: {valid_lengths}")  # הצגת תוצאת בדיקת האורכים.
@@ -315,7 +309,7 @@ def validate_plane_geometry(points):
             and valid_bases  # התנאי השני: סדר בסיסים תקין.
             and valid_lengths  # התנאי השלישי: אורכים חיוביים.
             and valid_coplanarity  # התנאי הרביעי: קו־מישוריות.
-)
+            )
     print(f"  Invalid number of points: {len(points)}")  # הצגת מספר הנקודות הלא תקין.
     return False  # דחיית ההגדרה כאשר מספר הנקודות אינו שלוש או ארבע.
 
@@ -335,11 +329,9 @@ def find_valid_plane_order(points):
     תחילה נבדק הסדר המקורי. אם הוא אינו תקין, הפונקציה
     עוברת על תמורות הנקודות ובודקת כל סידור עד למציאת סידור תקין.
     """
-    # בדיקת הסדר המקורי לפני חיפוש סידורים אחרים.
-    if validate_plane_geometry(points):  # בדיקה אם הסדר המקורי תקין.
+    if validate_plane_geometry(points):  # בדיקה אם הסדר המקורי תקין.  # בדיקת הסדר המקורי לפני חיפוש סידורים אחרים.
         return points  # החזרת הרשימה המקורית אם היא תקינה.
-    # חיפוש סידור חלופי רק אם הסדר המקורי אינו תקין.
-    for candidate in permutations(points):  # יצירת התמורות האפשריות של הנקודות.
+    for candidate in permutations(points):  # יצירת התמורות האפשריות של הנקודות.  # חיפוש סידור חלופי רק אם הסדר המקורי אינו תקין.
         candidate=list(candidate)  # המרת התמורה לרשימה.
         if candidate==points:  # בדיקה אם התמורה זהה לרשימה המקורית שכבר נבדקה.
             continue  # דילוג לתמורה הבאה.
@@ -393,16 +385,11 @@ def create_error_frame(plane_number, points):
     לאחר מכן מוצגות הקואורדינטות המקוריות של כל נקודות המישור.
     """
     frame=np.zeros((420,700),dtype=np.uint8)  # יצירת תמונה שחורה בגודל 700 על 420 פיקסלים.
-    # הצגת כותרת השגיאה על גבי התמונה.
-    cv2.putText(frame, f"PLANE {plane_number}-ERROR",(25, 55),cv2.FONT_HERSHEY_SIMPLEX,1.0,255,2)
-    # הצגת הודעה המציינת שהמישור אינו תקין.
-    cv2.putText(frame,"INVALID PLANE",(25,105),cv2.FONT_HERSHEY_SIMPLEX,0.8,255,2)
-    # הצגת כל הנקודות המקוריות שהתקבלו עבור המישור.
-    for i,point in enumerate(points):
-        # בניית מחרוזת הכוללת את מספר הנקודה ואת הקואורדינטות שלה.
-        point_text=(f"P{i + 1} = "f"({point[0]:.3f},{point[1]:.3f},{point[2]:.3f})")
-        # כתיבת הקואורדינטות על גבי פריים השגיאה.
-        cv2.putText(frame,point_text,(25,165+i*50),cv2.FONT_HERSHEY_SIMPLEX,0.65,255,2)
+    cv2.putText(frame, f"PLANE {plane_number}-ERROR",(25, 55),cv2.FONT_HERSHEY_SIMPLEX,1.0,255,2)  # הצגת כותרת השגיאה על גבי התמונה.
+    cv2.putText(frame,"INVALID PLANE",(25,105),cv2.FONT_HERSHEY_SIMPLEX,0.8,255,2)  # הצגת הודעה המציינת שהמישור אינו תקין.
+    for i,point in enumerate(points):  # הצגת כל הנקודות המקוריות שהתקבלו עבור המישור.
+        point_text=(f"P{i + 1} = "f"({point[0]:.3f},{point[1]:.3f},{point[2]:.3f})")  # בניית מחרוזת הכוללת את מספר הנקודה ואת הקואורדינטות שלה.
+        cv2.putText(frame,point_text,(25,165+i*50),cv2.FONT_HERSHEY_SIMPLEX,0.65,255,2)  # כתיבת הקואורדינטות על גבי פריים השגיאה.
     return frame  # החזרת תמונת השגיאה.
 
 
@@ -432,40 +419,30 @@ def create_video(projections, output_file, fps):
         raise ValueError("No frames available for the video.")  # העלאת שגיאה אם אין פריימים לסרטון.
     if fps<=0:  # בדיקה שקצב הפריימים חיובי.
         raise ValueError("FPS must be greater than zero.")  # העלאת שגיאה אם קצב הפריימים אינו תקין.
-    # קביעת הגודל האחיד של הסרטון לפי הפריים הגדול ביותר ברשימה.
-    max_height=max(p.shape[0] for p in projections)  # מציאת גובה הפריים הגדול ביותר.
+    max_height=max(p.shape[0] for p in projections)  # מציאת גובה הפריים הגדול ביותר.  # קביעת הגודל האחיד של הסרטון לפי הפריים הגדול ביותר ברשימה.
     max_width=max(p.shape[1] for p in projections)  # מציאת רוחב הפריים הגדול ביותר.
-    # התאמת הממדים למספרים זוגיים, כנדרש על ידי קודקי MP4 נפוצים.
-    video_height=max_height+(max_height%2)  # התאמת גובה הסרטון למספר זוגי.
+    video_height=max_height+(max_height%2)  # התאמת גובה הסרטון למספר זוגי.  # התאמת הממדים למספרים זוגיים, כנדרש על ידי קודקי MP4 נפוצים.
     video_width=max_width+(max_width%2)  # התאמת רוחב הסרטון למספר זוגי.
     fourcc=cv2.VideoWriter_fourcc(*"mp4v")  # בחירת קודק לקידוד הסרטון בפורמט MP4V.
-    # יצירת כותב הווידאו עם הנתיב, הקודק, קצב הפריימים וגודל הסרטון.
-    writer=cv2.VideoWriter(output_file,fourcc,fps,(video_width,video_height),isColor=True)
+    writer=cv2.VideoWriter(output_file,fourcc,fps,(video_width,video_height),isColor=True)  # יצירת כותב הווידאו עם הנתיב, הקודק, קצב הפריימים וגודל הסרטון.
     if not writer.isOpened():  # בדיקה אם כותב הווידאו נפתח בהצלחה.
         raise RuntimeError(f"Could not create video: {output_file}")  # העלאת שגיאה אם לא ניתן ליצור את הקובץ.
     total_frames=0  # אתחול מונה הפריימים שנכתבו לסרטון.
     try:  # התחלת בלוק שמבטיח שחרור משאבים גם במקרה של שגיאה.
-        # מעבר על כל הפריימים לפי הסדר שבו הם מופיעים ברשימה.
-        for plane_number,projection in enumerate(projections,start=1):
+        for plane_number,projection in enumerate(projections,start=1):  # מעבר על כל הפריימים לפי הסדר שבו הם מופיעים ברשימה.
             height,width=projection.shape  # קבלת גובה ורוחב הפריים הנוכחי.
-            # יצירת פריים שחור בגודל האחיד של הסרטון.
-            frame=np.zeros((video_height,video_width),dtype=np.uint8)
-            # עיגול ערכי הפריים, הגבלתם לטווח 0–255 והמרתם ל-8 ביט.
-            image=np.clip(np.rint(projection), 0, 255).astype(np.uint8)
+            frame=np.zeros((video_height,video_width),dtype=np.uint8)  # יצירת פריים שחור בגודל האחיד של הסרטון.
+            image=np.clip(np.rint(projection), 0, 255).astype(np.uint8)  # עיגול ערכי הפריים, הגבלתם לטווח 0–255 והמרתם ל-8 ביט.
             y_offset=(video_height-height)//2  # חישוב ההיסט האנכי למרכוז התמונה.
             x_offset=(video_width-width)//2  # חישוב ההיסט האופקי למרכוז התמונה.
-            # הצבת התמונה המלאה במרכז הפריים השחור.
-            frame[y_offset:y_offset+height,x_offset:x_offset+width]=image
-            # המרת הפריים מגווני אפור לפורמט BGR בעל שלושה ערוצים.
-            color_frame=cv2.cvtColor(frame,cv2.COLOR_GRAY2BGR)
+            frame[y_offset:y_offset+height,x_offset:x_offset+width]=image  # הצבת התמונה המלאה במרכז הפריים השחור.
+            color_frame=cv2.cvtColor(frame,cv2.COLOR_GRAY2BGR)  # המרת הפריים מגווני אפור לפורמט BGR בעל שלושה ערוצים.
             writer.write(color_frame)  # כתיבת הפריים לקובץ הווידאו.
             total_frames+=1  # הגדלת מונה הפריימים לאחר כתיבת פריים אחד.
-            # הצגת התקדמות כתיבת הפריימים לסרטון.
-            print(f"Plane {plane_number}/{len(projections)} " f"written; total frames: {total_frames}")
+            print(f"Plane {plane_number}/{len(projections)} " f"written; total frames: {total_frames}")  # הצגת התקדמות כתיבת הפריימים לסרטון.
     finally:  # בלוק שמתבצע גם במקרה של שגיאה בזמן כתיבת הסרטון.
         writer.release()  # שחרור כותב הווידאו וסגירת הקובץ.
-    # הצגת פרטי הסרטון שנוצר.
-    print(f"Video saved to: {output_file}")  # הצגת נתיב קובץ הווידאו.
+    print(f"Video saved to: {output_file}")  # הצגת נתיב קובץ הווידאו.  # הצגת פרטי הסרטון שנוצר.
     print(f"Video dimensions: {video_width} x {video_height}")  # הצגת ממדי הסרטון.
     print(f"Video FPS: {fps}")  # הצגת קצב הפריימים שנקבע.
     print(f"Video frames: {total_frames}")  # הצגת מספר הפריימים שנכתבו.
@@ -487,7 +464,7 @@ def main():
 
     אופן הפעולה:
     1. קריאת הנפח והמטא־נתונים.
-    2. בדיקת הנפח והמרת סוג הנתונים.
+    2. בדיקת תקינות הנפח והמרת סוג הנתונים במידת הצורך.
     3. קריאת המישורים מקובץ CSV.
     4. בדיקת תקינות גאומטרית וסידור הנקודות.
     5. יצירת פריימי שגיאה עבור מישורים לא תקינים.
@@ -496,144 +473,119 @@ def main():
     8. הצגת סיכום הביצועים ובדיקת יעדי הקצב.
     """
     import argparse  # ייבוא הספרייה לקריאת ארגומנטים משורת הפקודה.
-    # יצירת מנתח הארגומנטים של התוכנית.
-    parser=argparse.ArgumentParser(description="Project planes onto a 3D volume and create an MP4 video.")
+    parser=argparse.ArgumentParser(description="Project planes onto a 3D volume and create an MP4 video.")  # יצירת מנתח הארגומנטים של התוכנית.
     parser.add_argument("nrrd_file",help="Input NRRD volume")  # הגדרת הארגומנט של קובץ הנפח.
     parser.add_argument("csv_file",help="CSV file containing plane definitions")  # הגדרת הארגומנט של קובץ המישורים.
     parser.add_argument("output_file",help="Output MP4 video path")  # הגדרת הארגומנט של קובץ הפלט.
     args=parser.parse_args()  # קריאת הארגומנטים שהועברו בעת הפעלת התוכנית.
-    # טעינת הנפח התלת־ממדי והמטא־נתונים מקובץ NRRD.
-    M,header=nrrd.read(args.nrrd_file,index_order="C")
-    # הצגת מידע על הנפח ועל מערכת הקואורדינטות שלו.
-    print("Volume shape:",M.shape)  # הצגת ממדי הנפח.
-    print("NRRD space:",header.get("space"))  # הצגת מערכת הקואורדינטות של הנפח.
-    print("Space origin:",header.get("space origin"))  # הצגת ראשית מערכת הקואורדינטות.
-    print("Space directions:\n",header.get("space directions"))  # הצגת וקטורי הכיוון של הצירים.
-    print("Volume dtype:",M.dtype)  # הצגת סוג הנתונים המקורי של הנפח.
-    print("Volume value range:",M.min(),M.max())  # הצגת ערכי הנפח המינימלי והמקסימלי.
-    # הודעה המציינת שקואורדינטות ה-CSV צריכות להתאים למערכת הקואורדינטות של הנפח.
-    print("CSV plane coordinates must match the volume coordinate system.")
-    if M.size==0:  # בדיקה אם המערך אינו מכיל איברים.
-        raise ValueError("The input volume is empty.")  # עצירת התוכנית אם הנפח ריק.
-    # בדיקה שערכי הנפח נמצאים בטווח שאפשר לייצג באמצעות uint16.
-    if M.min()<0 or M.max()>np.iinfo(np.uint16).max:
-        raise ValueError("Volume values cannot be represented as uint16")  # עצירת התוכנית אם הערכים אינם בטווח המותר.
-    M=M.astype(np.uint16)  # המרת ערכי הנפח לסוג uint16 לצורך המשך העיבוד.
+    M,header=nrrd.read(args.nrrd_file, index_order="C")  # טעינת הנפח התלת־ממדי והמטא־נתונים מקובץ NRRD.
+    if M.size==0:  # בדיקה אם המערך ריק.
+        raise ValueError("The input volume is empty.")  # הצגת שגיאה אם הנפח ריק.
+    if np.issubdtype(M.dtype, np.signedinteger):  # בדיקה אם סוג הנתונים הוא מספר שלם עם סימן.
+        if M.min()<0:  # בדיקה אם קיימים ערכים שליליים בנפח.
+            raise ValueError(  # עצירת התוכנית אם קיימים ערכים שליליים.
+                "The NRRD volume contains negative values and cannot "
+                "be converted to an unsigned integer type.")
+        unsigned_dtype=np.dtype(f"u{M.dtype.itemsize}")  # קביעת סוג הנתונים המקביל ללא סימן.
+        M=M.astype(unsigned_dtype)  # המרת הנפח לסוג הנתונים ללא סימן.
     validate_volume(M)  # בדיקת תקינות ממדי הנפח וסוג הנתונים לאחר ההמרה.
+    print("Volume shape:", M.shape)  # הצגת מידע על הנפח ועל מערכת הקואורדינטות שלו.
+    print("NRRD space:", header.get("space"))
+    print("Space origin:", header.get("space origin"))
+    print("Space directions:\n", header.get("space directions"))
+    print("Volume dtype:", M.dtype)
+    print("Volume value range:", M.min(), M.max())
+    print("CSV plane coordinates are interpreted as voxel indices (X, Y, Z).")  # ציון האופן שבו מתפרשות הקואורדינטות בקובץ CSV.
     planes=[]  # יצירת רשימה לאחסון הגדרות המישורים מקובץ ה-CSV.
-    # פתיחת קובץ ה-CSV לקריאה, תוך תמיכה בקידוד UTF-8 עם BOM.
-    with open(args.csv_file, newline="",encoding="utf-8-sig") as csvfile:
+    with open(args.csv_file, newline="",encoding="utf-8-sig") as csvfile:  # פתיחת קובץ ה-CSV לקריאה, תוך תמיכה בקידוד UTF-8 עם BOM.
         reader=csv.reader(csvfile)  # יצירת אובייקט לקריאת שורות הקובץ.
         next(reader,None)  # דילוג על שורת הכותרת של קובץ ה-CSV.
-        # מעבר על שורות הקובץ, כאשר מספר השורה מתחיל מ-2 בגלל הכותרת.
-        for row_number,row in enumerate(reader,start=2):
-            # בדיקה אם השורה ריקה או מכילה רווחים בלבד.
-            if not row or all(not value.strip() for value in row):
+        for row_number,row in enumerate(reader,start=2):  # מעבר על שורות הקובץ, כאשר מספר השורה מתחיל מ-2 בגלל הכותרת.
+            if not row or all(not value.strip() for value in row):  # בדיקה אם השורה ריקה או מכילה רווחים בלבד.
                 continue  # דילוג לשורה הבאה.
             try:  # התחלת טיפול בשגיאות שעלולות להתרחש בעת קריאת השורה.
                 num_points=int(row[0])  # קריאת מספר הנקודות המוגדרות בשורה.
                 if num_points not in (3,4):  # בדיקה שמספר הנקודות הוא שלוש או ארבע.
                     raise ValueError("A plane must contain 3 or 4 points.")  # העלאת שגיאה אם מספר הנקודות אינו נתמך.
-                # קריאת הקואורדינטות והמרתן למספרים עשרוניים.
-                values=[float(value) for value in row[1:1+num_points*3]]
-                # בדיקה שמספר הקואורדינטות תואם למספר הנקודות שהוגדר.
-                if len(values)!=num_points*3:
-                    raise ValueError("Incorrect number of coordinate values.")  # העלאת שגיאה אם מספר הקואורדינטות שגוי.
-                # חלוקת הקואורדינטות לקבוצות של שלושה ערכים: X, Y, Z.
-                points=[tuple(values[i:i+3]) for i in range(0,len(values),3)]
+                expected_values = 1 + num_points * 3  # חישוב מספר השדות הצפוי בשורה לפי מספר הנקודות.
+                while row and not row[-1].strip():  # הסרת שדות ריקים שמופיעים בסוף שורת ה-CSV.
+                    row.pop()
+                if len(row)!=expected_values:  # בדיקה שמספר השדות לאחר הסרת השדות הריקים תקין.
+                    print("\n--- CSV ERROR DEBUG ---")
+                    print(f"Row number: {row_number}")
+                    print(f"Number of points: {num_points}")
+                    print(f"Expected fields: {expected_values}")
+                    print(f"Actual fields: {len(row)}")
+                    print(f"Row content: {row}")
+                    print("-----------------------")
+                    raise ValueError("Incorrect number of coordinate values.")
+                values = [float(value) for value in row[1:]]  # קריאת הקואורדינטות והמרתן למספרים עשרוניים.
+                if not all(math.isfinite(value) for value in values):  # בדיקה שכל הקואורדינטות הן מספרים סופיים.
+                    raise ValueError("Coordinates must be finite numbers.")
+                points=[tuple(values[i:i+3]) for i in range(0,len(values),3)]  # חלוקת הקואורדינטות לקבוצות של שלושה ערכים: X, Y, Z.
                 planes.append(points)  # הוספת הגדרת המישור לרשימת המישורים.
             except (ValueError,IndexError) as error:  # תפיסת שגיאות המרה או גישה לאיברים בשורה.
                 raise ValueError(f"Invalid CSV row {row_number}: {error}") from error  # הצגת מספר השורה שבה נמצאה השגיאה.
 
     if not planes:  # בדיקה אם לא נמצאו הגדרות מישורים בקובץ.
         raise ValueError("The CSV file contains no plane definitions.")  # עצירת התוכנית אם אין מישורים.
-    # יצירת רשימת משימות שתשמור על הסדר המקורי של המישורים בקובץ CSV.
-    plane_jobs=[]
-    # מעבר על כל המישורים ובדיקת התקינות הגאומטרית שלהם.
-    for i,points in enumerate(planes,start=1):
-        # בדיקת הסדר המקורי וחיפוש סדר חלופי אם הסדר המקורי אינו תקין.
-        ordered_points=find_valid_plane_order(points)
+    plane_jobs=[]  # יצירת רשימת משימות שתשמור על הסדר המקורי של המישורים בקובץ CSV.
+    for i,points in enumerate(planes,start=1):  # מעבר על כל המישורים ובדיקת התקינות הגאומטרית שלהם.
+        ordered_points=find_valid_plane_order(points)  # בדיקת הסדר המקורי וחיפוש סדר חלופי אם הסדר המקורי אינו תקין.
         if ordered_points is None:  # בדיקה אם לא נמצא סידור תקין של נקודות המישור.
             print(f"Plane {i}: invalid - Error Frame created")
-            # יצירת פריים שגיאה המציג את מספר המישור ואת הקואורדינטות המקוריות.
-            error_frame = create_error_frame(i,points)
-            # שמירת פריים השגיאה במיקום המתאים ברצף הסרטון.
-            plane_jobs.append(("error",error_frame))
+            error_frame = create_error_frame(i,points)  # יצירת פריים שגיאה המציג את מספר המישור ואת הקואורדינטות המקוריות.
+            plane_jobs.append(("error",error_frame))  # שמירת פריים השגיאה במיקום המתאים ברצף הסרטון.
         else:  # נמצא סדר נקודות תקין עבור המישור.
             if ordered_points!=points:  # בדיקה אם היה צורך לשנות את סדר הנקודות.
                 print(f"Plane {i}: valid - point order updated")
             else:  # הסדר המקורי נמצא תקין.
                 print(f"Plane {i}: valid")
-            # שמירת הנקודות התקינות לצורך חישוב ההקרנה בהמשך.
-            plane_jobs.append(("valid",ordered_points))
-    # שלב 1: חישוב ההקרנות התקינות ומדידת הביצועים שלהן.
-    # חימום Numba לפני מדידת זמן חישוב ההקרנות.
-    # מטרת החימום היא לבצע קומפילציה של פונקציות ההקרנה לפני המדידה.
-    # כך זמן הקומפילציה הראשוני לא ייכלל בזמן הביצוע הנמדד.
-    # יצירת נקודות מלאכותיות עבור מישור המוגדר באמצעות 3 נקודות.
-    dummy_3_points=[(-12.75,8.35,-3.5),(4.25,-16.8,7.65),(-9.4,-5.25,13.2)]
-    # יצירת נקודות מלאכותיות עבור מישור המוגדר באמצעות 4 נקודות.
-    dummy_4_points=[(-12.75,8.35,-3.5),(4.25,-16.8,7.65),(-9.4,-5.25,13.2),(15.6,-11.45,-8.25)]
-    # הפעלת שתי פונקציות ההקרנה לצורך קומפילציה מראש.
-    _ = project_plane_3(M,*dummy_3_points)  # חימום פונקציית ההקרנה עבור שלוש נקודות.
+            plane_jobs.append(("valid",ordered_points))  # שמירת הנקודות התקינות לצורך חישוב ההקרנה בהמשך.
+    dummy_3_points=[(-12.75,8.35,-3.5),(4.25,-16.8,7.65),(-9.4,-5.25,13.2)]  # שלב 1: חישוב ההקרנות התקינות ומדידת הביצועים שלהן. חימום Numba לפני מדידת זמן חישוב ההקרנות. מטרת החימום היא לבצע קומפילציה של פונקציות ההקרנה לפני המדידה. כך זמן הקומפילציה הראשוני לא ייכלל בזמן הביצוע הנמדד. יצירת נקודות מלאכותיות עבור מישור המוגדר באמצעות 3 נקודות.
+    dummy_4_points=[(-12.75,8.35,-3.5),(4.25,-16.8,7.65),(-9.4,-5.25,13.2),(15.6,-11.45,-8.25)]  # יצירת נקודות מלאכותיות עבור מישור המוגדר באמצעות 4 נקודות.
+    _ = project_plane_3(M,*dummy_3_points)  # חימום פונקציית ההקרנה עבור שלוש נקודות.  # הפעלת שתי פונקציות ההקרנה לצורך קומפילציה מראש.
     _ = project_plane_4(M,*dummy_4_points)  # חימום פונקציית ההקרנה עבור ארבע נקודות.
     print("Numba warm-up completed for both plane types.")  # הצגת הודעה על סיום שלב החימום.
-    # התחלת מדידת זמן ההקרנות לאחר פעולת החימום.
-    projection_start=time.perf_counter()  # שמירת זמן ההתחלה למדידת חישוב ההקרנות.
+    projection_start=time.perf_counter()  # שמירת זמן ההתחלה למדידת חישוב ההקרנות.  # התחלת מדידת זמן ההקרנות לאחר פעולת החימום.
     projections=[]  # רשימת הקרנות תקינות בלבד, המשמשת לחישוב נתוני הביצועים.
     video_frames=[]  # רשימת כל הפריימים, כולל הקרנות ופריימי שגיאה, לפי הסדר המקורי.
     total_pixels=0  # אתחול מונה הפיקסלים של ההקרנות התקינות בלבד.
-    # מעבר על כל משימות המישורים לפי הסדר המקורי.
-    for plane_number,(job_type,data) in enumerate(plane_jobs,start=1):
+    for plane_number,(job_type,data) in enumerate(plane_jobs,start=1):  # מעבר על כל משימות המישורים לפי הסדר המקורי.
         if job_type=="error":  # בדיקה אם המשימה מכילה פריים שגיאה.
-            # הוספת פריים השגיאה למיקומו המקורי בסרטון.
-            video_frames.append(data)
+            video_frames.append(data)  # הוספת פריים השגיאה למיקומו המקורי בסרטון.
             continue  # מעבר למישור הבא ללא חישוב הקרנה וללא הכללתו במדידת FPS.
         points=data  # שמירת נקודות המישור התקין במשתנה נוח לשימוש.
         plane_start=time.perf_counter()  # שמירת זמן ההתחלה של חישוב ההקרנה הנוכחית.
-        # חישוב ההקרנה הדו־ממדית של המישור התקין.
-        projection=project_valid_plane(M,points)
+        projection=project_valid_plane(M,points)  # חישוב ההקרנה הדו־ממדית של המישור התקין.
         plane_elapsed=time.perf_counter()-plane_start  # חישוב זמן ההקרנה של המישור הנוכחי.
-        # שמירת ההקרנה ברשימת ההקרנות התקינות וברשימת פריימי הסרטון.
-        projections.append(projection)
+        projections.append(projection)  # שמירת ההקרנה ברשימת ההקרנות התקינות וברשימת פריימי הסרטון.
         video_frames.append(projection)
         height, width=projection.shape  # קבלת גובה ורוחב תמונת ההקרנה.
         total_pixels+=height*width  # הוספת מספר הפיקסלים של ההקרנה למונה הכולל.
-        # חישוב קצב ההקרנות של המישור הנוכחי.
-        plane_fps=1.0/plane_elapsed if plane_elapsed>0 else 0.0
-        # הצגת ממדי ההקרנה וזמן החישוב שלה.
-        print(f"Plane {plane_number}: {height} rows x {width} columns")
+        plane_fps=1.0/plane_elapsed if plane_elapsed>0 else 0.0  # חישוב קצב ההקרנות של המישור הנוכחי.
+        print(f"Plane {plane_number}: {height} rows x {width} columns")  # הצגת ממדי ההקרנה וזמן החישוב שלה.
         print(f"  Projection time: {plane_elapsed:.6f} seconds")
         print(f"  Projection FPS: {plane_fps:.2f}")
-    # חישוב זמן הטיפול הכולל במשימות ההקרנה.
-    # זמן זה כולל את מעבר הלולאה ואת הטיפול בפריימי שגיאה.
-    projection_elapsed=time.perf_counter()-projection_start
+    projection_elapsed=time.perf_counter()-projection_start  # חישוב זמן הטיפול הכולל במשימות ההקרנה. זמן זה כולל את מעבר הלולאה ואת הטיפול בפריימי שגיאה.
     number_of_projections=len(projections)  # ספירת מספר ההקרנות התקינות שחושבו.
-    # חישוב מספר ההקרנות התקינות לשנייה.
-    # פריימי שגיאה אינם נכללים במונה ההקרנות.
-    projection_fps=(number_of_projections/projection_elapsed if projection_elapsed>0 else 0.0)
-    # חישוב מספר הפיקסלים של ההקרנות התקינות שעובדו בשנייה.
-    pixel_throughput=(total_pixels/projection_elapsed if projection_elapsed>0 else 0.0)
-    # הצגת סיכום ביצועי חישוב ההקרנות.
-    print("\n--- Projection Performance ---")
+    projection_fps=(number_of_projections/projection_elapsed if projection_elapsed>0 else 0.0)  # חישוב מספר ההקרנות התקינות לשנייה. פריימי שגיאה אינם נכללים במונה ההקרנות.
+    pixel_throughput=(total_pixels/projection_elapsed if projection_elapsed>0 else 0.0)  # חישוב מספר הפיקסלים של ההקרנות התקינות שעובדו בשנייה.
+    print("\n--- Projection Performance ---")  # הצגת סיכום ביצועי חישוב ההקרנות.
     print(f"Complete projections: {number_of_projections}")  # הצגת מספר ההקרנות התקינות שהושלמו.
     print(f"Total projected pixels: {total_pixels:,}")  # הצגת מספר הפיקסלים הכולל של ההקרנות.
     print(f"Projection computation time: {projection_elapsed:.4f} seconds")  # הצגת זמן חישוב ההקרנות.
     print(f"Projection FPS: {projection_fps:.2f}")  # הצגת קצב ההקרנות הממוצע.
     print(f"Projected pixels per second: {pixel_throughput:,.0f}")  # הצגת תפוקת הפיקסלים לשנייה.
-    # שלב 2: יצירת הסרטון מתוך כל הפריימים, כולל פריימי שגיאה.
-    video_fps=60  # קביעת קצב ההצגה של הסרטון ל-60 פריימים בשנייה.
+    video_fps=60  # קביעת קצב ההצגה של הסרטון ל-60 פריימים בשנייה.  # שלב 2: יצירת הסרטון מתוך כל הפריימים, כולל פריימי שגיאה.
     video_start=time.perf_counter()  # תחילת מדידת זמן יצירת הסרטון.
-    # יצירת הסרטון מתוך רשימת כל הפריימים לפי סדר המישורים המקורי.
-    create_video(video_frames, args.output_file, fps=video_fps)
+    create_video(video_frames, args.output_file, fps=video_fps)  # יצירת הסרטון מתוך רשימת כל הפריימים לפי סדר המישורים המקורי.
     video_elapsed=time.perf_counter()-video_start  # חישוב זמן כתיבת הסרטון.
-    # הצגת סיכום זמני הביצוע וקצבי הפריימים.
-    print("\n--- Overall Performance ---")
+    print("\n--- Overall Performance ---")  # הצגת סיכום זמני הביצוע וקצבי הפריימים.
     print(f"Video writing time: {video_elapsed:.4f} seconds")  # הצגת זמן כתיבת הסרטון.
     print(f"Projection calculation FPS: {projection_fps:.2f}")  # הצגת קצב חישוב ההקרנות התקינות.
     print(f"Video playback FPS: {video_fps}")  # הצגת קצב ההצגה של הסרטון.
-    # בדיקה אם ביצועי ההקרנה עומדים ביעדים שהוגדרו במטלה.
-    print("\n--- Assignment Performance Check ---")
+    print("\n--- Assignment Performance Check ---")  # בדיקה אם ביצועי ההקרנה עומדים ביעדים שהוגדרו במטלה.
     if projection_fps>=100:  # בדיקה אם קצב ההקרנות מגיע ליעד הרצוי של 100 הקרנות לשנייה.
         print("Projection performance meets the 100 FPS target.")  # הצגת הודעה שהיעד הרצוי הושג.
     elif projection_fps>=30:  # בדיקה אם קצב ההקרנות מגיע לפחות ל-30 הקרנות לשנייה.
@@ -642,6 +594,5 @@ def main():
         print("Projection performance is below the 30 FPS minimum target.\n")  # הצגת הודעה שהיעד המינימלי לא הושג.
 
 
-# בדיקה אם הקובץ הופעל ישירות ולא יובא כמודול מקובץ Python אחר.
-if __name__ == "__main__":
+if __name__ == "__main__":  # בדיקה אם הקובץ הופעל ישירות ולא יובא כמודול מקובץ Python אחר.
     main()  # הפעלת הפונקציה הראשית שמנהלת את כל שלבי התוכנית.
