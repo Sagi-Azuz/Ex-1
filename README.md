@@ -226,5 +226,6 @@ Additional technical documentation is available in the `docs/` directory:
 
 ## Authors
 
-Developed as part of an academic project.
+Developed by Sagi Azuz and Liel Avidor as part of an academic project.
+
 
