@@ -14,8 +14,7 @@ All generated frames are combined into an MP4 video while preserving the origina
 ---
 
 ## 🎥 Project Demo
-https://github.com/user-attachments/assets/72cfce5d-c5df-41c2-8a2c-ca5229a5960f
-
+<video src="https://github.com/user-attachments/assets/72cfce5d-c5df-41c2-8a2c-ca5229a5960f" width="100%" controls autoplay muted loop></video>
 ---
 ## Problem Definition
 
