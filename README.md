@@ -12,10 +12,9 @@ For each plane, the program validates its geometry and generates a 2D projection
 
 All generated frames are combined into an MP4 video while preserving the original order of the planes in the CSV file.
 ---
-
-## 🎥 Project Demo
-👉 **[לחצי כאן לצפייה בסרטון ההדגמה](https://drive.google.com/uc?export=download&id=1tkfJA0hSs63AuqeFRgW7EsfEB3vIQU51)**
-
+### 🎥 Project Demo
+👉 **[Click here to watch the project demo video](https://drive.google.com/uc?export=download&id=1tkfJA0hSs63AuqeFRgW7EsfEB3vIQU51)**
+---
 ## Problem Definition
 The purpose of this project is to develop an algorithm that can extract 2D projections from arbitrary planes defined inside a 3D volume.
 
