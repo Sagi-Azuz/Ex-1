@@ -13,7 +13,6 @@ For each plane, the program validates its geometry and generates a 2D projection
 All generated frames are combined into an MP4 video while preserving the original order of the planes in the CSV file.
 ---
 ### 🎥 Project Demo
-👉 **[Click here to watch the project demo video](https://drive.google.com/uc?export=download&id=1tkfJA0hSs63AuqeFRgW7EsfEB3vIQU51)**
 <img width="256" height="256" alt="output_280-ezgif com-gif-to-mp4-converter" src="https://github.com/user-attachments/assets/4b6836b6-1a91-4073-8a18-5d72f372a42f" />
 
 ---
