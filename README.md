@@ -14,6 +14,8 @@ All generated frames are combined into an MP4 video while preserving the origina
 ---
 ### 🎥 Project Demo
 👉 **[Click here to watch the project demo video](https://drive.google.com/uc?export=download&id=1tkfJA0hSs63AuqeFRgW7EsfEB3vIQU51)**
+<img width="256" height="256" alt="output_280-ezgif com-gif-to-mp4-converter" src="https://github.com/user-attachments/assets/4b6836b6-1a91-4073-8a18-5d72f372a42f" />
+
 ---
 ## Problem Definition
 The purpose of this project is to develop an algorithm that can extract 2D projections from arbitrary planes defined inside a 3D volume.
