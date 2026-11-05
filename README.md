@@ -144,11 +144,7 @@ Ex-1/
 └── docs/
     ├── SRS.md
     ├── algorithm-design-revised.md
-    └── images/
-        ├── frame_1.png
-        ├── frame_2.png
-        ├── frame_3.png
-        └── frame_4.png
+
 ```
 
 ## How to Run
