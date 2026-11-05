@@ -14,7 +14,6 @@ All generated frames are combined into an MP4 video while preserving the origina
 ---
 
 ## 🎥 Project Demo
-### 🎥 צפייה בהדגמת הפרויקט
 👉 **[לחצי כאן לצפייה בסרטון ההדגמה](https://drive.google.com/uc?export=download&id=1tkfJA0hSs63AuqeFRgW7EsfEB3vIQU51)**
 
 ## Problem Definition
