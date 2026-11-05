@@ -143,7 +143,7 @@ Ex-1/
 │
 └── docs/
     ├── SRS.md
-    ├── algorithm-design-revised.md
+    └── algorithm-design-revised.md
 
 ```
 
