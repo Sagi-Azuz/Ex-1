@@ -591,4 +591,4 @@ def test_three_point_projection_partially_outside_volume(affine_volume):  # בד
     assert result.ndim == 2  # בדיקה שתוצאת ההקרנה היא דו־ממדית.
     assert result.size > 0  # בדיקה שתוצאת ההקרנה אינה ריקה.
     assert np.any(result == 0)  # בדיקה שלפחות חלק מהפיקסלים מחוץ לנפח קיבלו ערך אפס.
-# בדיקה
+ 
