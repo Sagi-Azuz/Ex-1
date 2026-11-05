@@ -230,9 +230,3 @@ Additional technical documentation is available in the `docs/` directory:
 
 Developed as part of an academic project.
 
-
-
-
-https://github.com/user-attachments/assets/2695e3f3-3d0d-45f7-bbdc-6bacb34ba986
-ffmpeg -i output_280.mp4 -vcodec h264 -acodec aac fixed_output.mp4
-
