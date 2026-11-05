@@ -14,8 +14,7 @@ All generated frames are combined into an MP4 video while preserving the origina
 ---
 
 ## 🎥 Project Demo
-<video src="https://github.com/user-attachments/assets/72cfce5d-c5df-41c2-8a2c-ca5229a5960f" width="100%" controls autoplay muted loop></video>
----
+🔗 **[לחצו כאן לצפייה בסרטון ההדגמה של הפרויקט](https://github.com/user-attachments/assets/72cfce5d-c5df-41c2-8a2c-ca5229a5960f)**---
 ## Problem Definition
 
 The purpose of this project is to develop an algorithm that can extract 2D projections from arbitrary planes defined inside a 3D volume.
