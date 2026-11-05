@@ -15,8 +15,7 @@ All generated frames are combined into an MP4 video while preserving the origina
 
 ## 🎥 Project Demo
 ### 🎥 צפייה בהדגמת הפרויקט
-👉 **[לחצי כאן לצפייה בסרטון ההדגמה של הפרויקט (MP4)](https://github.com/user-attachments/assets/72cfce5d-c5df-41c2-8a2c-ca5229a5960f)**## Problem Definition
-
+[![צפה בסרטון ההדגמה](https://github.com/user-attachments/assets/0a857cd9-94b4-432d-9e74-91f8ac4bcbab)](https://github.com/user-attachments/assets/72cfce5d-c5df-41c2-8a2c-ca5229a5960f)
 The purpose of this project is to develop an algorithm that can extract 2D projections from arbitrary planes defined inside a 3D volume.
 
 The system must validate the geometric properties of each plane, sample the corresponding positions in the volume, and generate an output image.
