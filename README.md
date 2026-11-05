@@ -11,7 +11,12 @@ The program receives:
 For each plane, the program validates its geometry and generates a 2D projection when the plane is valid. Invalid planes are handled by generating an Error Frame.
 
 All generated frames are combined into an MP4 video while preserving the original order of the planes in the CSV file.
+---
 
+## 🎥 Project Demo
+https://github.com/user-attachments/assets/72cfce5d-c5df-41c2-8a2c-ca5229a5960f
+
+---
 ## Problem Definition
 
 The purpose of this project is to develop an algorithm that can extract 2D projections from arbitrary planes defined inside a 3D volume.
