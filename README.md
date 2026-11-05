@@ -217,9 +217,16 @@ Numba warm-up is performed before projection timing so that initial compilation 
 
 Additional technical documentation is available in the `docs/` directory:
 
+
 - [Software Requirements Specification](docs/SRS.md)
 - [Algorithm Design](docs/algorithm-design-revised.md)
 
 ## Authors
 
 Developed as part of an academic project.
+
+
+
+
+https://github.com/user-attachments/assets/2695e3f3-3d0d-45f7-bbdc-6bacb34ba986
+
