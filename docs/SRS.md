@@ -24,11 +24,11 @@ python project.py file.nrrd file.csv file.mp4
 
 **FR-1 — Load Volume:** Read the NRRD file using C index order, verify that the volume is 3D, and ensure that its dimensions are within the range 1–1023. As an implementation decision, the software intentionally accepts both signed and unsigned integer data types: `uint8`, `uint16`, `uint32`, `int8`, `int16`, and `int32`. After loading, verify that all input values are non-negative and within the `uint16` range (0–65535). Convert the volume data to `uint16` only if all values satisfy these conditions. Otherwise, raise an error.
 
-**FR-2 — Read Plane Definitions:** Read the CSV file, skip the header row and empty rows, and parse planes defined by either 3 or 4 points.
+**FR-2 — Read Plane Definitions:** Read the CSV file, skip the header row, empty rows, and comment rows starting with `#`. Parse planes defined by either 3 or 4 points. Invalid CSV rows are recorded for error frame generation, and processing continues with the remaining rows.
 
 **FR-3 — Validate Geometry:** Check the geometric conditions for planes defined by 3 or 4 points using `EPS = 0.001`. If the original point order is invalid, the software checks possible permutations of the points and accepts the first valid ordering found.
 
-**FR-4 — Handle Invalid Planes:** A plane for which no valid point ordering is found is reported, and an error frame is added to the output video in its corresponding position. Processing continues with the remaining planes. Errors in the input structure or file loading stop the processing.
+**FR-4 — Handle Invalid Planes:** Invalid plane definitions, including malformed CSV rows and planes for which no valid point ordering is found, are reported, and an error frame is added to the output video in the corresponding position. Processing continues with the remaining planes. Errors that prevent loading or reading the input files, or indicate an invalid volume structure, stop the processing.
 
 **FR-5 — Compute Projections:** Generate a 2D projection matrix for each valid plane. The projection dimensions are determined by the geometric distances between the defining points. Sampling positions are calculated using midpoint sampling along the corresponding plane segments.
 
