@@ -165,6 +165,39 @@ py project.py data/nrrd/MRHead_1.nrrd data/csv/lecturer_example.csv output.mp4
 
 The program generates the output video at the specified path.
 
+## Experiment & Results
+
+As required by the assignment guidelines, we conducted a projection experiment using the `MRHead_1.nrrd` volumetric dataset and the `lecturer_example.csv` plane definitions file. 
+
+The program successfully processed the input, validated the geometric properties of the provided planes, and generated the corresponding 2D projections. Invalid planes within the dataset triggered the error-handling mechanism, properly generating distinct Error Frames without interrupting the execution. 
+
+Below are specific frame results extracted during the experiment:
+
+**Frame 1 – Valid Plane Projection**
+
+<img width="500" alt="image" src="https://github.com/user-attachments/assets/0a857cd9-94b4-432d-9e74-91f8ac4bcbab" />
+
+**Frame 2 – Valid Plane Projection**
+
+<img width="500" alt="image" src="https://github.com/user-attachments/assets/78303ebe-106a-4085-9d5a-77ccd9b8ff92" />
+
+**Frame 3 – Invalid Plane (Error Frame Handling)**
+
+<img width="500" alt="image" src="https://github.com/user-attachments/assets/cd61f2af-941e-4a76-858f-6de48a0bfa08" />
+
+**Frame 4 – Additional Valid Projection**
+
+<img width="500" alt="Screenshot" src="https://github.com/user-attachments/assets/51838688-a521-4e1c-a360-2f5df88dd1b7" />
+
+All generated frames were sequentially compiled into the final output video.
+The runtime performance met the assignment benchmarks, sustaining an average projection speed well above the 30 FPS minimum threshold.
+
+**Complete MP4 Output Video:**
+
+<img width="256" height="256" alt="output_280-ezgif com-gif-to-mp4-converter" src="https://github.com/user-attachments/assets/4b6836b6-1a91-4073-8a18-5d72f372a42f" />
+
+
+
 ## Testing
 
 The project includes unit tests for the main components:
