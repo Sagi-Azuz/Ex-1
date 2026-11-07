@@ -171,11 +171,24 @@ As required by the assignment guidelines, we conducted a projection experiment u
 
 The program successfully processed the input, validated the geometric properties of the provided planes, and generated the corresponding 2D projections. Invalid planes within the dataset triggered the error-handling mechanism, properly generating distinct Error Frames without interrupting the execution. 
 
-The complete runtime performance met the required assignment benchmarks, sustaining an average projection speed well above the 30 FPS minimum threshold, driven by trilinear interpolation and Numba optimizations. 
+Below are specific frame results extracted during the experiment:
 
-All generated frames, including valid projections and error frames, were sequentially compiled into the final output video.
+**Frame 1 – Valid Plane Projection**
 
-👉 **[View the generated MP4 output video from this experiment](https://drive.google.com/uc?export=download&id=1tkfJA0hSs63AuqeFRgW7EsfEB3vIQU51)**
+<img width="500" alt="image" src="https://github.com/user-attachments/assets/0a857cd9-94b4-432d-9e74-91f8ac4bcbab" />
+
+**Frame 3 – Invalid Plane (Error Frame Handling)**
+
+<img width="500" alt="image" src="https://github.com/user-attachments/assets/cd61f2af-941e-4a76-858f-6de48a0bfa08" />
+
+**Frame 4 – Additional Valid Projection**
+
+<img width="500" alt="Screenshot" src="https://github.com/user-attachments/assets/51838688-a521-4e1c-a360-2f5df88dd1b7" />
+
+All generated frames were sequentially compiled into the final output video. The runtime performance met the assignment benchmarks, sustaining an average projection speed well above the 30 FPS minimum threshold.
+
+👉 **[View the complete MP4 output video from this experiment](https://drive.google.com/uc?export=download&id=1tkfJA0hSs63AuqeFRgW7EsfEB3vIQU51)**
+
 
 ## Testing
 
