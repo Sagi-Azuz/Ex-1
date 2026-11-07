@@ -355,7 +355,8 @@ def project_valid_plane(M, points):
     raise ValueError("A plane must contain 3 or 4 points.")  # העלאת שגיאה אם מספר הנקודות אינו נתמך.
 
 
-def create_error_frame(plane_number, points):
+
+def create_error_frame(plane_number, points, error_message=None):
     """
     מטרת הפונקציה:
     ליצור פריים שגיאה עבור מישור שאינו תקין.
@@ -363,21 +364,27 @@ def create_error_frame(plane_number, points):
     קלט:
     plane_number - מספר המישור לפי סדרו בקובץ CSV.
     points - הנקודות המקוריות שהתקבלו מקובץ CSV.
+    error_message - הודעת השגיאה, אם נמצאה שגיאה בקריאת שורת ה-CSV.
 
     פלט:
-    תמונת שגיאה בגווני אפור הכוללת את מספר המישור ואת הקואורדינטות שלו.
+    תמונת שגיאה בגווני אפור הכוללת את מספר המישור ואת פרטי השגיאה.
 
     אופן הפעולה:
     נוצרת תמונה שחורה בגודל קבוע.
     על התמונה נכתבת כותרת המציינת את מספר המישור ואת העובדה שהוא אינו תקין.
-    לאחר מכן מוצגות הקואורדינטות המקוריות של כל נקודות המישור.
+    אם התקבלה הודעת שגיאה, היא מוצגת על גבי התמונה.
+    לאחר מכן מוצגות הקואורדינטות של הנקודות התקינות שהתקבלו, אם קיימות.
     """
     frame=np.zeros((420,700),dtype=np.uint8)  # יצירת תמונה שחורה בגודל 700 על 420 פיקסלים.
-    cv2.putText(frame, f"PLANE {plane_number}-ERROR",(25, 55),cv2.FONT_HERSHEY_SIMPLEX,1.0,255,2)  # הצגת כותרת השגיאה על גבי התמונה.
+    cv2.putText(frame,f"PLANE {plane_number}-ERROR",(25,55),cv2.FONT_HERSHEY_SIMPLEX,1.0,255,2)  # הצגת כותרת השגיאה על גבי התמונה.
     cv2.putText(frame,"INVALID PLANE",(25,105),cv2.FONT_HERSHEY_SIMPLEX,0.8,255,2)  # הצגת הודעה המציינת שהמישור אינו תקין.
+    start_y=165  # קביעת מיקום התחלתי להצגת הקואורדינטות.
+    if error_message is not None:  # בדיקה אם התקבלה הודעת שגיאה מקריאת שורת ה-CSV.
+        cv2.putText(frame,f"CSV ERROR: {error_message[:65]}",(25,155),cv2.FONT_HERSHEY_SIMPLEX,0.45,255,1)  # הצגת הודעת השגיאה על גבי הפריים.
+        start_y=205  # הזזת הקואורדינטות כלפי מטה כדי שלא יחפפו להודעת השגיאה.
     for i,point in enumerate(points):  # הצגת כל הנקודות המקוריות שהתקבלו עבור המישור.
-        point_text=(f"P{i + 1} = "f"({point[0]:.3f},{point[1]:.3f},{point[2]:.3f})")  # בניית מחרוזת הכוללת את מספר הנקודה ואת הקואורדינטות שלה.
-        cv2.putText(frame,point_text,(25,165+i*50),cv2.FONT_HERSHEY_SIMPLEX,0.65,255,2)  # כתיבת הקואורדינטות על גבי פריים השגיאה.
+        point_text=(f"P{i+1} = "f"({point[0]:.3f},{point[1]:.3f},{point[2]:.3f})")  # בניית מחרוזת הכוללת את מספר הנקודה ואת הקואורדינטות שלה.
+        cv2.putText(frame,point_text,(25,start_y+i*45),cv2.FONT_HERSHEY_SIMPLEX,0.65,255,2)  # כתיבת הקואורדינטות על גבי פריים השגיאה.
     return frame  # החזרת תמונת השגיאה.
 
 
@@ -485,41 +492,44 @@ def main():
     print("Volume dtype:", M.dtype)
     print("Volume value range:", M.min(), M.max())
     print("CSV plane coordinates are interpreted as voxel indices (X, Y, Z).")  # ציון האופן שבו מתפרשות הקואורדינטות בקובץ CSV.
+    
     planes=[]  # יצירת רשימה לאחסון הגדרות המישורים מקובץ ה-CSV.
     with open(args.csv_file, newline="",encoding="utf-8-sig") as csvfile:  # פתיחת קובץ ה-CSV לקריאה, תוך תמיכה בקידוד UTF-8 עם BOM.
         reader=csv.reader(csvfile)  # יצירת אובייקט לקריאת שורות הקובץ.
         next(reader,None)  # דילוג על שורת הכותרת של קובץ ה-CSV.
+        plane_number=0  # אתחול מונה המישורים שאינם שורות הערה או שורות ריקות.
         for row_number,row in enumerate(reader,start=2):  # מעבר על שורות הקובץ, כאשר מספר השורה מתחיל מ-2 בגלל הכותרת.
             if not row or all(not value.strip() for value in row):  # בדיקה אם השורה ריקה או מכילה רווחים בלבד.
                 continue  # דילוג לשורה הבאה.
+            if row[0].strip().startswith("#"):  # בדיקה אם השורה מכילה הערה שמתחילה בסימן #.
+                continue  # דילוג על שורת ההערה.
+            plane_number+=1  # הגדלת מונה המישורים עבור שורת נתונים.
             try:  # התחלת טיפול בשגיאות שעלולות להתרחש בעת קריאת השורה.
                 num_points=int(row[0])  # קריאת מספר הנקודות המוגדרות בשורה.
                 if num_points not in (3,4):  # בדיקה שמספר הנקודות הוא שלוש או ארבע.
                     raise ValueError("A plane must contain 3 or 4 points.")  # העלאת שגיאה אם מספר הנקודות אינו נתמך.
-                expected_values = 1 + num_points * 3  # חישוב מספר השדות הצפוי בשורה לפי מספר הנקודות.
+                expected_values=1+num_points*3  # חישוב מספר השדות הצפוי בשורה לפי מספר הנקודות.
                 while row and not row[-1].strip():  # הסרת שדות ריקים שמופיעים בסוף שורת ה-CSV.
                     row.pop()
                 if len(row)!=expected_values:  # בדיקה שמספר השדות לאחר הסרת השדות הריקים תקין.
-                    print("\n--- CSV ERROR DEBUG ---")
-                    print(f"Row number: {row_number}")
-                    print(f"Number of points: {num_points}")
-                    print(f"Expected fields: {expected_values}")
-                    print(f"Actual fields: {len(row)}")
-                    print(f"Row content: {row}")
-                    print("-----------------------")
-                    raise ValueError("Incorrect number of coordinate values.")
-                values = [float(value) for value in row[1:]]  # קריאת הקואורדינטות והמרתן למספרים עשרוניים.
+                    raise ValueError("Incorrect number of coordinate values.")  # העלאת שגיאה אם מספר השדות אינו תקין.
+                values=[float(value) for value in row[1:]]  # קריאת הקואורדינטות והמרתן למספרים עשרוניים.
                 if not all(math.isfinite(value) for value in values):  # בדיקה שכל הקואורדינטות הן מספרים סופיים.
-                    raise ValueError("Coordinates must be finite numbers.")
+                    raise ValueError("Coordinates must be finite numbers.")  # העלאת שגיאה אם נמצאו ערכים שאינם סופיים.
                 points=[tuple(values[i:i+3]) for i in range(0,len(values),3)]  # חלוקת הקואורדינטות לקבוצות של שלושה ערכים: X, Y, Z.
-                planes.append(points)  # הוספת הגדרת המישור לרשימת המישורים.
+                planes.append((points,None))  # שמירת הנקודות התקינות ללא הודעת שגיאה.
             except (ValueError,IndexError) as error:  # תפיסת שגיאות המרה או גישה לאיברים בשורה.
-                raise ValueError(f"Invalid CSV row {row_number}: {error}") from error  # הצגת מספר השורה שבה נמצאה השגיאה.
-
+                print(f"ERROR: CSV row {row_number}, plane {plane_number}: {error}")  # הצגת מספר השורה והמישור שבהם נמצאה השגיאה.
+                planes.append((None,str(error)))  # שמירת המישור הפגום כדי ליצור עבורו פריים שגיאה ולהמשיך לקרוא את הקובץ.
     if not planes:  # בדיקה אם לא נמצאו הגדרות מישורים בקובץ.
         raise ValueError("The CSV file contains no plane definitions.")  # עצירת התוכנית אם אין מישורים.
     plane_jobs=[]  # יצירת רשימת משימות שתשמור על הסדר המקורי של המישורים בקובץ CSV.
-    for i,points in enumerate(planes,start=1):  # מעבר על כל המישורים ובדיקת התקינות הגאומטרית שלהם.
+    for i,(points,row_error) in enumerate(planes,start=1):  # מעבר על כל המישורים והפרדת הנקודות מהודעות השגיאה.
+        if row_error is not None:  # בדיקה אם נמצאה שגיאה בעת קריאת שורת ה-CSV.
+            print(f"ERROR: Plane {i} is invalid: {row_error}")  # הצגת הודעת השגיאה בטרמינל.
+            error_frame=create_error_frame(i,[],row_error)  # יצירת פריים שגיאה המציג גם את סיבת השגיאה בשורת ה-CSV.
+            plane_jobs.append(("error",error_frame))  # שמירת פריים השגיאה במיקום המתאים בסרטון.
+            continue  # מעבר למישור הבא ללא בדיקה גאומטרית.
         try:  # ניסיון למצוא סדר תקין לנקודות המישור.
             ordered_points=find_valid_plane_order(points)  # בדיקת הסדר המקורי וחיפוש סדר חלופי אם הסדר המקורי אינו תקין.
         except ValueError as error:  # תפיסת שגיאה במקרה שלא נמצא סידור תקין של נקודות המישור.
