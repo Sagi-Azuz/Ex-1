@@ -16,6 +16,8 @@ For each plane, the applicable geometric conditions for three-point or four-poin
 
 If the original point order does not satisfy the conditions, possible permutations of the points are checked. The first valid ordering found is used to compute the projection.
 
+Empty rows and comment rows starting with `#` are skipped when reading the CSV file. Malformed CSV rows are reported and recorded for error frame generation. Processing continues with the remaining rows.
+
 If no valid ordering is found, the plane is reported, and an error frame is added to the output video in its corresponding position. Processing continues with the remaining planes.
 
 ## 4. Projection Image Dimensions
@@ -119,7 +121,7 @@ If a sample point lies exactly at a voxel location, the corresponding voxel valu
 
 After all valid projections have been computed and error frames have been prepared for invalid planes:
 
-1. The maximum height and width among all projections are determined.
+1. The maximum height and width among all video frames, including valid projections and error frames, are determined.
 2. If either video dimension is odd, it is increased by one pixel.
 3. Each projection is centered inside a black frame of uniform dimensions.
 4. Projection values are rounded, clipped to the range 0–255, and converted to `uint8`.
@@ -129,6 +131,8 @@ The frames preserve the original order of the plane definitions in the CSV file,
 
 ## 9. Performance Measurement
 
-Before projection timing begins, the Numba functions are warmed up. Warm-up time is excluded from projection FPS measurements but included in the total processing time.
+Before projection processing begins, the Numba functions are warmed up to exclude their initial compilation time from the measured projection processing time.
 
-The projection computation time, number of projections, projections per second, and pixels per second are measured. Video generation time is measured separately.
+The measured time includes the projection processing loop, including loop overhead, diagnostic output, and error frame handling. Projection FPS is calculated using the number of successfully computed projections divided by the measured processing time. Pixel throughput is calculated using the total number of projected pixels divided by the same time.
+
+Video generation time is measured separately.
