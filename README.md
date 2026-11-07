@@ -1,3 +1,4 @@
+<img width="800" height="450" alt="ezgif com-video-to-gif-converter" src="https://github.com/user-attachments/assets/d4d2c35b-c8fb-4f3d-bd66-242e0328bae5" />
 # 3D Volume Plane Projection
 
 ## Overview
@@ -15,7 +16,7 @@ All generated frames are combined into an MP4 video while preserving the origina
 
 ## Project Demo
 
-<img width="500" alt="ezgif com-video-to-gif-converter (1)" src="https://github.com/user-attachments/assets/6d0d29eb-6729-4aad-ad1e-69e4c7199515" />
+<img width="800" height="450" alt="ezgif com-video-to-gif-converter (1)" src="https://github.com/user-attachments/assets/ea6575bb-f103-41e2-8e92-c39831beeeb1" />
 
 ---
 ## Problem Definition
