@@ -189,9 +189,11 @@ Below are specific frame results extracted during the experiment:
 
 <img width="500" alt="Screenshot" src="https://github.com/user-attachments/assets/51838688-a521-4e1c-a360-2f5df88dd1b7" />
 
-All generated frames were sequentially compiled into the final output video. The runtime performance met the assignment benchmarks, sustaining an average projection speed well above the 30 FPS minimum threshold.
+All generated frames were sequentially compiled into the final output video.
+The runtime performance met the assignment benchmarks, sustaining an average projection speed well above the 30 FPS minimum threshold.
 
 **Complete MP4 Output Video:**
+
 <img width="256" height="256" alt="output_280-ezgif com-gif-to-mp4-converter" src="https://github.com/user-attachments/assets/4b6836b6-1a91-4073-8a18-5d72f372a42f" />
 
 
