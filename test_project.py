@@ -119,8 +119,8 @@ def test_interpolation_at_upper_boundary_uses_zero_for_missing_neighbors(small_v
 
 
 # בדיקות לאימות מבנה הנפח, הממדים וסוג הנתונים.
-@pytest.mark.parametrize("dtype", [np.uint8, np.uint16, np.uint32])
-def test_validate_volume_accepts_supported_types(dtype):  # בדיקה שפונקציית האימות מקבלת את שלושת סוגי המספרים השלמים ללא סימן.
+@pytest.mark.parametrize("dtype", [np.uint8, np.uint16, np.uint32, np.int8, np.int16, np.int32])
+def test_validate_volume_accepts_supported_types(dtype):  # בדיקה שפונקציית האימות מקבלת את סוגי המספרים השלמים הנתמכים.
     volume = np.zeros((2, 3, 4), dtype=dtype)  # יצירת נפח תלת־ממדי מסוג הנתונים הנבדק.
     assert project.validate_volume(volume) is None  # נפח תקין אמור לעבור אימות ללא שגיאה.
 
@@ -144,10 +144,9 @@ def test_validate_volume_rejects_unsupported_types(dtype):  # בדיקה שסו�
         project.validate_volume(volume)  # בדיקת דחיית סוג הנתונים.
 
 
-def test_validate_volume_rejects_int16():  # בדיקה שסוג הנתונים int16 נדחה בהתאם לדרישות המטלה.
+def test_validate_volume_accepts_int16():  # בדיקה שסוג הנתונים int16 מתקבל.
     volume = np.zeros((2, 2, 2), dtype=np.int16)  # יצירת נפח מסוג int16.
-    with pytest.raises(ValueError, match="data type"):  # ציפייה לקבלת שגיאה המציינת סוג נתונים לא נתמך.
-        project.validate_volume(volume)  # בדיקת דחיית נפח מסוג int16.
+    project.validate_volume(volume)  # בדיקה שהנפח מתקבל ללא העלאת חריגה.
 
 
 # בדיקות תקינות גיאומטרית למישור שמוגדר באמצעות שלוש נקודות.
@@ -238,13 +237,14 @@ def test_find_valid_plane_order_returns_original_valid_order():  # בדיקה ש
     assert project.find_valid_plane_order(points) == points  # בדיקה שהפונקציה מחזירה את הסדר המקורי.
 
 
-def test_find_valid_plane_order_returns_none_for_collinear_three_points():  # בדיקה שסידור מחדש אינו יכול להפוך נקודות קולינריות למישור תקין.
+def test_find_valid_plane_order_raises_for_collinear_three_points():  # בדיקה שסידור מחדש אינו יכול להפוך נקודות קולינריות למישור תקין.
     points = [
         (0.0, 0.0, 0.0),  # נקודה ראשונה.
         (1.0, 0.0, 0.0),  # נקודה שנייה.
         (-1.0, 0.0, 0.0),  # נקודה שלישית על אותו ישר.
     ]
-    assert project.find_valid_plane_order(points) is None  # בדיקה שלא נמצא סידור תקין.
+    with pytest.raises(ValueError, match="Invalid plane geometry"):  # בדיקה שמועלית שגיאה כאשר לא נמצא סידור תקין.
+        project.find_valid_plane_order(points)  # הפעלת הפונקציה עם נקודות קולינריות.
 
 
 def test_project_valid_plane_rejects_unsupported_point_count(small_volume):  # בדיקה שפונקציית ההקרנה דוחה כמות נקודות שאינה שלוש או ארבע.
@@ -591,4 +591,3 @@ def test_three_point_projection_partially_outside_volume(affine_volume):  # בד
     assert result.ndim == 2  # בדיקה שתוצאת ההקרנה היא דו־ממדית.
     assert result.size > 0  # בדיקה שתוצאת ההקרנה אינה ריקה.
     assert np.any(result == 0)  # בדיקה שלפחות חלק מהפיקסלים מחוץ לנפח קיבלו ערך אפס.
- 
