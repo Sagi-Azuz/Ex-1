@@ -177,6 +177,10 @@ Below are specific frame results extracted during the experiment:
 
 <img width="500" alt="image" src="https://github.com/user-attachments/assets/0a857cd9-94b4-432d-9e74-91f8ac4bcbab" />
 
+**Frame 2 – Valid Plane Projection**
+
+<img width="500" alt="image" src="https://github.com/user-attachments/assets/78303ebe-106a-4085-9d5a-77ccd9b8ff92" />
+
 **Frame 3 – Invalid Plane (Error Frame Handling)**
 
 <img width="500" alt="image" src="https://github.com/user-attachments/assets/cd61f2af-941e-4a76-858f-6de48a0bfa08" />
@@ -187,7 +191,8 @@ Below are specific frame results extracted during the experiment:
 
 All generated frames were sequentially compiled into the final output video. The runtime performance met the assignment benchmarks, sustaining an average projection speed well above the 30 FPS minimum threshold.
 
-👉 **[View the complete MP4 output video from this experiment](https://drive.google.com/uc?export=download&id=1tkfJA0hSs63AuqeFRgW7EsfEB3vIQU51)**
+**Complete MP4 Output Video:**
+https://github.com/user-attachments/assets/72cfce5d-c5df-41c2-8a2c-ca5229a5960f
 
 
 ## Testing
