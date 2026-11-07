@@ -27,10 +27,11 @@ informational purposes but is not used to convert physical coordinates.
 
 ### 3. Functional Requirements
 
-**FR-1 --- Load Volume:** Read the NRRD file using C index order, verify
-that the volume is 3D, ensure that its dimensions are within the range
-1--1023, and verify that its values do not exceed the `uint16` range.
-The data is converted to `uint16`.
+**FR-1 — Load Volume:** Read the NRRD file using C index order,
+verify that the volume is 3D, ensure that its dimensions are within
+the range 1–1023, and verify that the input values are non-negative
+and within the supported range. Convert the volume data to `uint16`
+before processing.
 
 **FR-2 --- Read Plane Definitions:** Read the CSV file, skip the header
 row and empty rows, and parse planes defined by either 3 or 4 points.
@@ -40,13 +41,17 @@ planes defined by 3 or 4 points using `EPS = 0.001`. If the original
 point order is invalid, the software checks possible permutations of the
 points and accepts the first valid ordering found.
 
-**FR-4 --- Skip Invalid Planes:** A plane for which no valid point
-ordering is found is reported and skipped. Errors in the input structure
-or file loading stop the processing.
+**FR-4 — Handle Invalid Planes:** A plane for which no valid point
+ordering is found is reported, and an error frame is added to the
+output video in its corresponding position. Processing continues
+with the remaining planes. Errors in the input structure or file
+loading stop the processing.
 
-**FR-5 --- Compute Projections:** Generate a 2D projection matrix for
-each valid plane. Image dimensions and sample positions are calculated
-according to the geometric distances between the points.
+**FR-5 — Compute Projections:** Generate a 2D projection matrix
+for each valid plane. The projection dimensions are determined
+by the geometric distances between the defining points. Sampling
+positions are calculated using midpoint sampling along the
+corresponding plane segments.
 
 **FR-6 --- Sample Volume Values:** Sample volume values using trilinear
 interpolation. Points outside the volume, as well as neighboring voxels
@@ -58,8 +63,9 @@ dimensions. Video dimensions are adjusted to even pixel values.
 Projection values are rounded, clipped to the range 0--255, and
 converted to 8-bit values.
 
-**FR-8 --- Preserve Order:** The video frames must follow the order of
-the valid planes as they appear in the CSV file.
+**FR-8 — Preserve Order:** The video frames must follow the order
+of the plane definitions in the CSV file. Invalid planes must be
+represented by error frames in their original positions.
 
 **FR-9 --- Report Performance:** Display computation times, the number
 of projections, projection dimensions, projections per second, and pixel
@@ -90,3 +96,25 @@ components.
     output, since values above 255 are clipped to 255.
 -   Verify whether the FPS target applies only to projection computation
     or to the entire processing pipeline.
+
+### 6. Implementation Decisions
+
+- **Coordinate System:** Coordinates provided in the CSV file are
+  interpreted as voxel indices (X, Y, Z). Physical coordinates from
+  NRRD metadata are not converted.
+
+- **Data Type:** The volume data is converted to `uint16` before
+  projection processing. Input values must be non-negative and
+  within the `uint16` range.
+
+- **Interpolation:** Trilinear interpolation is used to calculate
+  values at non-integer sampling positions. Out-of-volume voxel
+  accesses return 0.
+
+- **Video Intensity Mapping:** Projection values are rounded and
+  clipped to the range 0–255 before being converted to 8-bit
+  grayscale images.
+
+- **Performance Measurement:** Performance is measured using
+  projection computation time, excluding Numba warm-up time.
+  Video encoding and playback are measured separately.
