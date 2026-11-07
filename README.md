@@ -14,7 +14,8 @@ All generated frames are combined into an MP4 video while preserving the origina
 ---
 
 ## Project Demo
-<img width="500" alt="output_280-ezgif com-gif-to-mp4-converter" src="https://github.com/user-attachments/assets/4b6836b6-1a91-4073-8a18-5d72f372a42f" />
+
+<img width="500" alt="ezgif com-video-to-gif-converter (1)" src="https://github.com/user-attachments/assets/6d0d29eb-6729-4aad-ad1e-69e4c7199515" />
 
 ---
 ## Problem Definition
