@@ -165,6 +165,18 @@ py project.py data/nrrd/MRHead_1.nrrd data/csv/lecturer_example.csv output.mp4
 
 The program generates the output video at the specified path.
 
+## Experiment & Results
+
+As required by the assignment guidelines, we conducted a projection experiment using the `MRHead_1.nrrd` volumetric dataset and the `lecturer_example.csv` plane definitions file. 
+
+The program successfully processed the input, validated the geometric properties of the provided planes, and generated the corresponding 2D projections. Invalid planes within the dataset triggered the error-handling mechanism, properly generating distinct Error Frames without interrupting the execution. 
+
+The complete runtime performance met the required assignment benchmarks, sustaining an average projection speed well above the 30 FPS minimum threshold, driven by trilinear interpolation and Numba optimizations. 
+
+All generated frames, including valid projections and error frames, were sequentially compiled into the final output video.
+
+👉 **[View the generated MP4 output video from this experiment](https://drive.google.com/uc?export=download&id=1tkfJA0hSs63AuqeFRgW7EsfEB3vIQU51)**
+
 ## Testing
 
 The project includes unit tests for the main components:
