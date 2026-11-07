@@ -210,40 +210,28 @@ def project_plane_4(M,a,b,c,d):
     return project_plane_core(M,a,b,c,d,True)  # הפעלת ליבת ההקרנה במצב של ארבע נקודות והחזרת התוצאה.
 
 
-def validate_volume(M):  # הגדרת פונקציה המקבלת את מערך הנפח התלת־ממדי.
-    """  # תחילת תיעוד הפונקציה.
-    מטרת הפונקציה:  # הסבר על מטרת הפונקציה.
-    לבדוק שהנפח שנטען עומד בדרישות התוכנית.  # בדיקת תקינות הנפח לפני המשך העיבוד.
+def validate_volume(M):
+    """
+    מטרת הפונקציה:
+    בדיקת תקינות המבנה וסוג הנתונים של הנפח התלת־ממדי.
 
-    קלט:  # פירוט הקלט של הפונקציה.
-    M - מערך הנפח התלת־ממדי.  # המערך שמכיל את ערכי ה־Voxel.
+    קלט:
+    M - מערך numpy המייצג נפח תלת־ממדי.
 
-    פלט:  # פירוט הפלט של הפונקציה.
-    אין ערך מוחזר. אם הנפח אינו תקין, הפונקציה מעלה ValueError.  # במקרה של נתונים לא תקינים תיזרק שגיאה.
+    פלט:
+    אין. אם הנפח אינו תקין, תיזרק שגיאת ValueError.
 
-    אופן הפעולה:  # הסבר על תהליך הבדיקה.
-    נבדקים מספר הממדים, גודל כל ממד וסוג הנתונים של המערך.  # בדיקת שלושת התנאים הנדרשים.
-    """  # סוף תיעוד הפונקציה.
-
-    if M.ndim!=3:  # בדיקה שמספר הממדים במערך הוא בדיוק שלושה.
-        raise ValueError("Volume must be a 3D matrix")  # העלאת שגיאה אם המערך אינו תלת־ממדי.
-    sz,sy,sx=M.shape  # שמירת גדלי הממדים במשתנים לפי הסדר Z, Y, X.
-    if not all(1<=size<2**10 for size in (sx,sy,sz)):  # בדיקה שכל אחד משלושת הממדים הוא בין 1 ל־1023.
-        raise ValueError(  # העלאת שגיאה אם אחד מממדי הנפח אינו עומד בדרישות.
-            f"Invalid volume dimensions: x={sx}, y={sy}, z={sz}. "  # הצגת הגדלים שהתקבלו בפועל.
-            "Each dimension must be between 1 and 1023."  # הסבר על טווח הגדלים המותר.
-        )  # סוף העלאת השגיאה.
-    allowed_types = (  # הגדרת רשימת סוגי הנתונים שהפונקציה רשאית לקבל.
-        np.dtype("uint8"),  # מספרים שלמים ללא סימן בגודל 8 ביט.
-        np.dtype("uint16"),  # מספרים שלמים ללא סימן בגודל 16 ביט.
-        np.dtype("uint32"),  # מספרים שלמים ללא סימן בגודל 32 ביט.
-    )  # סוף הגדרת רשימת סוגי הנתונים.
-    if M.dtype not in allowed_types:  # בדיקה שסוג הנתונים של המערך נמצא ברשימת הסוגים המותרים.
-        raise ValueError(  # העלאת שגיאה אם סוג הנתונים אינו נתמך.
-            f"Invalid volume data type: {M.dtype}. "  # הצגת סוג הנתונים שהתקבל בפועל.
-            "Expected uint8, uint16 or uint32."  # הצגת סוגי הנתונים שהפונקציה מאפשרת.
-        )  # סוף העלאת השגיאה.
-
+    אופן הפעולה:
+       בדיקה שהמערך תלת־ממדי, שסוג הנתונים הוא מספר שלם (signed או unsigned),
+    ושכל אחד ממדי הנפח נמצא בטווח המותר.
+    """
+    if M.ndim!=3:  # בדיקה שהמערך הוא תלת־ממדי.
+        raise ValueError("The input volume must be a 3D matrix.")  # העלאת שגיאה אם המערך אינו תלת־ממדי.
+    if M.dtype not in (np.uint8,np.uint16,np.uint32,np.int8,np.int16,np.int32):  # בדיקה שסוג הנתונים הוא אחד מסוגי המספרים השלמים הנתמכים.
+        raise ValueError("Unsupported data type.")  # העלאת שגיאה אם סוג הנתונים אינו נתמך.
+    sx,sy,sz=M.shape  # קבלת ממדי הנפח.
+    if not (1<=sx<2**10 and 1<=sy<2**10 and 1<=sz<2**10):  # בדיקה שכל ממד נמצא בטווח המותר.
+        raise ValueError("Volume dimensions must be between 1 and 1023.")  # העלאת שגיאה אם אחד הממדים אינו תקין.
 
 def validate_plane_geometry(points):
     """
@@ -323,7 +311,7 @@ def find_valid_plane_order(points):
     points - רשימת נקודות המישור.
 
     פלט:
-    רשימת נקודות בסדר תקין, או None אם לא נמצא סדר מתאים.
+       רשימת נקודות בסדר תקין. אם לא נמצא סדר מתאים, תיזרק שגיאת ValueError.
 
     אופן הפעולה:
     תחילה נבדק הסדר המקורי. אם הוא אינו תקין, הפונקציה
@@ -337,7 +325,7 @@ def find_valid_plane_order(points):
             continue  # דילוג לתמורה הבאה.
         if validate_plane_geometry(candidate):  # בדיקה אם הסידור החדש תקין.
             return candidate  # החזרת הסידור הראשון שעבר את הבדיקה.
-    return None  # החזרת None אם לא נמצא אף סידור תקין.
+    raise ValueError("Invalid plane geometry: no valid point ordering found.")  # העלאת שגיאה אם לא נמצא סידור תקין של נקודות המישור.
 
 
 def project_valid_plane(M, points):
@@ -481,14 +469,15 @@ def main():
     M,header=nrrd.read(args.nrrd_file, index_order="C")  # טעינת הנפח התלת־ממדי והמטא־נתונים מקובץ NRRD.
     if M.size==0:  # בדיקה אם המערך ריק.
         raise ValueError("The input volume is empty.")  # הצגת שגיאה אם הנפח ריק.
-    if np.issubdtype(M.dtype, np.signedinteger):  # בדיקה אם סוג הנתונים הוא מספר שלם עם סימן.
-        if M.min()<0:  # בדיקה אם קיימים ערכים שליליים בנפח.
-            raise ValueError(  # עצירת התוכנית אם קיימים ערכים שליליים.
-                "The NRRD volume contains negative values and cannot "
-                "be converted to an unsigned integer type.")
-        unsigned_dtype=np.dtype(f"u{M.dtype.itemsize}")  # קביעת סוג הנתונים המקביל ללא סימן.
-        M=M.astype(unsigned_dtype)  # המרת הנפח לסוג הנתונים ללא סימן.
-    validate_volume(M)  # בדיקת תקינות ממדי הנפח וסוג הנתונים לאחר ההמרה.
+    validate_volume(M)  # בדיקת תקינות מבנה הנפח, ממדיו וסוג הנתונים לפני ביצוע ההמרה.
+    try:  # ניסיון לבדוק ולהמיר את הנפח לסוג הנתונים uint16.
+        if not np.issubdtype(M.dtype, np.integer):  # בדיקה אם הנתונים הם מספרים שלמים.
+            raise ValueError("The input volume must contain integer values.")  # העלאת שגיאה אם הנתונים אינם מספרים שלמים.
+        if M.min()<0 or M.max()>65535:  # בדיקה שכל ערכי הנפח נמצאים בטווח המותר של uint16.
+            raise ValueError("Volume values must be between 0 and 65535.")  # העלאת שגיאה אם הערכים מחוץ לטווח.
+        M=M.astype(np.uint16)  # המרת הנפח לסוג הנתונים uint16.
+    except (TypeError,ValueError,OverflowError) as error:  # תפיסת שגיאות שעלולות להתרחש במהלך הבדיקה או ההמרה.
+        raise ValueError(f"Cannot convert volume to uint16: {error}") from error  # העלאת שגיאה עם הסבר על כישלון ההמרה.
     print("Volume shape:", M.shape)  # הצגת מידע על הנפח ועל מערכת הקואורדינטות שלו.
     print("NRRD space:", header.get("space"))
     print("Space origin:", header.get("space origin"))
@@ -531,10 +520,11 @@ def main():
         raise ValueError("The CSV file contains no plane definitions.")  # עצירת התוכנית אם אין מישורים.
     plane_jobs=[]  # יצירת רשימת משימות שתשמור על הסדר המקורי של המישורים בקובץ CSV.
     for i,points in enumerate(planes,start=1):  # מעבר על כל המישורים ובדיקת התקינות הגאומטרית שלהם.
-        ordered_points=find_valid_plane_order(points)  # בדיקת הסדר המקורי וחיפוש סדר חלופי אם הסדר המקורי אינו תקין.
-        if ordered_points is None:  # בדיקה אם לא נמצא סידור תקין של נקודות המישור.
-            print(f"Plane {i}: invalid - Error Frame created")
-            error_frame = create_error_frame(i,points)  # יצירת פריים שגיאה המציג את מספר המישור ואת הקואורדינטות המקוריות.
+        try:  # ניסיון למצוא סדר תקין לנקודות המישור.
+            ordered_points=find_valid_plane_order(points)  # בדיקת הסדר המקורי וחיפוש סדר חלופי אם הסדר המקורי אינו תקין.
+        except ValueError as error:  # תפיסת שגיאה במקרה שלא נמצא סידור תקין של נקודות המישור.
+            print(f"ERROR: Plane {i} is invalid: {error}")  # הצגת הודעת שגיאה בטרמינל.
+            error_frame=create_error_frame(i,points)  # יצירת פריים שגיאה המציג את מספר המישור ואת הקואורדינטות המקוריות.
             plane_jobs.append(("error",error_frame))  # שמירת פריים השגיאה במיקום המתאים ברצף הסרטון.
         else:  # נמצא סדר נקודות תקין עבור המישור.
             if ordered_points!=points:  # בדיקה אם היה צורך לשנות את סדר הנקודות.
